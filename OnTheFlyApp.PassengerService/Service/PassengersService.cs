@@ -1,4 +1,8 @@
-﻿using MongoDB.Driver;
+﻿using Amazon.Runtime.Internal.Transform;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using MongoDB.Bson;
+using MongoDB.Driver;
 using OnTheFly.Models;
 using OnTheFlyApp.PassengerService.config;
 
@@ -22,7 +26,7 @@ namespace OnTheFlyApp.PassengerService.Service
         public List<Passenger> GetAll()
         {
             List<Passenger> passengers = new();
-            passengers = _passenger.Find<Passenger>(p =>true).ToList();
+            passengers = _passenger.Find<Passenger>(p => true).ToList();
             passengers.AddRange(_passengerDeactivated.Find(pd => true).ToList());
             
             return passengers;
@@ -38,8 +42,14 @@ namespace OnTheFlyApp.PassengerService.Service
             return passenger;
         }
 
-        public void Update(string cpf, Passenger passenger) => _passenger.ReplaceOne(p => p.Cpf == cpf, passenger);
+        public ActionResult<Passenger> Update(string cpf, bool status)
+        {
+            var options = new FindOneAndUpdateOptions<Passenger, Passenger> { ReturnDocument = ReturnDocument.After };
+            var update = Builders<Passenger>.Update.Set("Status", status);
+            var passenger = _passenger.FindOneAndUpdate<Passenger>(p => p.Cpf == cpf, update, options);
+            return passenger;
+        }
 
-        public void Delete(string cpf) => _passenger.DeleteOne(p => p.Cpf == cpf);
+        public long Delete(string cpf) => _passenger.DeleteOne(p => p.Cpf == cpf).DeletedCount;
     }
 }

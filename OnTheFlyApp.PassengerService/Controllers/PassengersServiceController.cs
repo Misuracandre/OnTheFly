@@ -20,20 +20,25 @@ namespace OnTheFlyApp.PassengerService.Controllers
         [HttpGet]
         public ActionResult<List<Passenger>> Get() => _passengerService.GetAll();
 
+        [HttpGet("{cpf:length(11)}")]
+        public ActionResult<Passenger> GetByCpf(string cpf) => _passengerService.GetByCpf(cpf);
+
         [HttpPost]
         public ActionResult<Passenger> Create(Passenger passenger) => _passengerService.Create(passenger);
+
+        [HttpPut("{cpf:length(11)}")]
+        public ActionResult<Passenger> Update(string cpf, bool status)
+        {
+            var pas = _passengerService.Update(cpf, status);
+            if (pas == null) return NotFound("Passageiro não encontrado");
+            return Ok(pas.Value);
+        }
 
         [HttpDelete("{cpf:length(11)}")]
         public IActionResult Delete(string cpf)
         {
-            var passenger = _passengerService.GetByCpf(cpf);
-
-            if (passenger == null)
-            {
-                return NotFound();
-            }
-
-            _passengerService.Delete(cpf);
+            if (_passengerService.Delete(cpf) != 1)
+                return NotFound("Registro não encontrado");
 
             return NoContent();
         }
