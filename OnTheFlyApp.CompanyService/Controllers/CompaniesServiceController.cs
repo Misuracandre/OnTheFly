@@ -45,10 +45,9 @@ namespace OnTheFlyApp.CompanyService.Controllers
             {
                 return NotFound();
             }
-            comp.Status = status;
-            _companyService.Update(cnpj, comp);
+            comp = _companyService.Update(cnpj, status);
 
-            return Ok();
+            return Ok(comp);
         }
 
         [HttpDelete]

@@ -33,6 +33,8 @@ namespace OnTheFlyApp.CompanyService.Service
         public Company GetByCompany(string cnpj)
         {
             var company = _company.Find<Company>(c => c.Cnpj == cnpj).FirstOrDefault();
+            if (company == null) { company = _companyDeactivated.Find<Company>(c => c.Cnpj == cnpj).FirstOrDefault(); }
+            if (company == null) return company;
 
             return company;
         }
@@ -48,7 +50,14 @@ namespace OnTheFlyApp.CompanyService.Service
             return companyaddress;
         }
 
-        public void Update(string cnpj, Company company) => _company.ReplaceOne(c => c.Cnpj == cnpj, company);
+        public Company Update(string cnpj, bool status)
+        {
+            var options = new FindOneAndUpdateOptions<Company, Company>{ ReturnDocument = ReturnDocument.After };
+            var update = Builders<Company>.Update.Set("Status", status);
+            var company = _company.FindOneAndUpdate<Company>(c => c.Cnpj == cnpj, update, options);
+
+            return company;
+        }
 
         public void Delete(string cnpj) => _company.DeleteOne(c => c.Cnpj == cnpj);
     }

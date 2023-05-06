@@ -10,7 +10,6 @@ namespace OnTheFly.Models
 {
     public class Company
     {
-        [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
         public string Cnpj { get; set; }
