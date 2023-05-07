@@ -58,6 +58,7 @@ namespace OnTheFlyApp.Services
         }
         public async Task<Company> Insert(Company company)
         {
+            if (company.Cnpj.Length < 14) throw new ArgumentException("Cnpj inválido");
             try
             {
                 HttpResponseMessage response = await CompaniesService.companytClient.GetAsync(endpointCompany + "/" + company.Cnpj);
@@ -74,19 +75,26 @@ namespace OnTheFlyApp.Services
             }
             catch (Exception)
             {
-                return null;
+                return new ArgumentException("Sem retorno do banco");
             }
         }
         public async Task<HttpStatusCode> Delete(string cnpj)
         {
-            HttpResponseMessage response = await CompaniesService.companytClient.DeleteAsync(endpointCompany + cnpj);
-            response.EnsureSuccessStatusCode();
-            var deleteJson = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<HttpStatusCode>(deleteJson);
+            try
+            {
+                HttpResponseMessage response = await CompaniesService.companytClient.DeleteAsync(endpointCompany + cnpj);
+                response.EnsureSuccessStatusCode();
+                return response.StatusCode;
+            }
+            catch (Exception)
+            {
+                throw new ArgumentException("Cnpj não encontrado");
+            }
         }
-        public async Task<HttpStatusCode> Update(string cnpj)
+        public async Task<HttpStatusCode> Update(string cnpj, bool status)
         {
-            bool status = false;
+            
+
             HttpResponseMessage response = await CompaniesService.companytClient.PutAsJsonAsync(endpointCompany + "/" + cnpj, status);
             response.EnsureSuccessStatusCode();
             var updateJson = await response.Content.ReadAsStringAsync();

@@ -33,7 +33,7 @@ namespace OnTheFlyApp.Controllers
         public async Task<HttpStatusCode> Delete(string cnpj) => await _companyService.Delete(cnpj);
 
         [HttpPut]
-        public async Task<HttpStatusCode> Update(string cnpj) => await _companyService.Update(cnpj);
+        public async Task<HttpStatusCode> Update(string cnpj, bool status) => await _companyService.Update(cnpj, status);
 
     }
 }
