@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Net;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using OnTheFly.Models;
@@ -25,7 +26,7 @@ namespace OnTheFlyApp.CompanyService.Controllers
         public ActionResult<List<Company>> GetActiveted() => _companyService.GetActiveted();
 
         [HttpGet("cnpj", Name = "GetCpnj")]
-        public ActionResult<Company> GetActiveted(string cnpj) => _companyService.GetByCompany(cnpj);
+        public ActionResult<Company> GetCnpj(string cnpj) => _companyService.GetByCompany(cnpj);
 
         [HttpPost]
         public ActionResult<Company> Create(Company company)
@@ -37,32 +38,32 @@ namespace OnTheFlyApp.CompanyService.Controllers
         }
 
         [HttpPut("{cnpj}")]
-        public IActionResult Update(string cnpj, bool status)
+        public HttpStatusCode Update(string cnpj, bool status)
         {
             var comp = _companyService.GetByCompany(cnpj); 
 
             if (comp == null)
             {
-                return NotFound();
+                return HttpStatusCode.BadRequest;
             }
             comp = _companyService.Update(cnpj, status);
 
-            return Ok(comp);
+            return HttpStatusCode.OK;
         }
 
         [HttpDelete]
-        public IActionResult Delete(string cnpj)
+        public HttpStatusCode Delete(string cnpj)
         {
             var company = _companyService.GetByCompany(cnpj);
 
             if (company == null)
             {
-                return NotFound();
+                return HttpStatusCode.NotFound;
             }
 
             _companyService.Delete(cnpj);
 
-            return Ok();
+            return HttpStatusCode.OK;
         }
     }
 }
