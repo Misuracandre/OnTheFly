@@ -31,6 +31,18 @@ namespace OnTheFlyApp.AirCraftService.Controllers
             return aircraft;
         }
 
+        [HttpGet("{Company}")]
+        public ActionResult<List<AirCraft>> GetByCompany(string cnpj)
+        {
+            var aircraft = _aircraftService.GetByCompany(cnpj);
+
+            if (aircraft == null)
+            {
+                return NotFound();
+            }
+            return aircraft;
+        }
+
         [HttpPut("{rab}")]
         public ActionResult<AirCraft> Update(string rab, DateTime dtLastFlight ) => _aircraftService.Update(rab, dtLastFlight);
 
