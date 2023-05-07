@@ -22,13 +22,18 @@ namespace OnTheFlyApp.Controllers
         [HttpGet("{rab}")]
         public ActionResult<AirCraft> GetByRab(string rab) => new AirCraft();
 
+
+        [HttpGet("{Company}")]
+        public ActionResult<AirCraft> GetByCompany(string cnpj) => new AirCraft();       
+
+
+
         [HttpPost]
         public ActionResult<AirCraft> Create(AirCraft aircraft) => new AirCraft();
 
         [HttpPut("{rab}")]
         public ActionResult<AirCraft> Update(string rab, DateTime dtLastFlight)
         {
-
             return new AirCraft();
         }
 
