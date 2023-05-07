@@ -51,22 +51,42 @@ namespace OnTheFlyApp.FlightService.Services
 
         public Flight CreateFlight(Flight flight)
         {
+            //Verifica se o voo é nacional
+            var destinationAirport = _airport.Find(a => a.Iata == flight.Destiny.Iata && a.Country == "BR").FirstOrDefault();
+            if (destinationAirport == null)
+            {
+                throw new ArgumentException("The flight destination is not a national airport.");
+            }
+
+            //Verifica se a companhia aérea está restrita
+            var airCraft = _airCraft.Find(ac => ac.Rab == flight.Plane.Rab && ac.Company.Status == true).FirstOrDefault();
+            if (airCraft == null)
+            {
+                throw new ArgumentException("The aircraft company is not authorized to operate flights.");
+            }
+
             _flight.InsertOne(flight);
 
             return flight;
         }
 
-        public Flight UpdateFlight(string rab, DateTime departure, bool status)
+        public Flight UpdateFlight(string rab, DateTime departure, bool status, Flight flight)
         {
-            var filter = Builders<Flight>.Filter.Eq(r => r.Plane.Rab, rab) &
+            if (flight == null)
+            {
+                throw new ArgumentException("Flight cannot be null.");
+            }
+
+            var filter = Builders<Flight>.Filter.Eq(f => f.Plane.Rab, rab) &
                 Builders<Flight>.Filter.Eq("Departure", departure);
 
             var options = new FindOneAndUpdateOptions<Flight, Flight> { ReturnDocument = ReturnDocument.After };
+
             var update = Builders<Flight>.Update.Set("Status", status);
 
-            var flight = _flight.FindOneAndUpdate<Flight>(filter, update, options);
+            var flightUpdated = _flight.FindOneAndUpdate<Flight>(filter, update, options);
 
-            return flight;
+            return flightUpdated;
         }
 
         public void DeleteFlight(string rab, DateTime departure)

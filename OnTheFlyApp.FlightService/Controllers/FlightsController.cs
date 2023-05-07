@@ -30,9 +30,9 @@ namespace OnTheFlyApp.FlightService.Controllers
         public Flight CreateFlight(Flight flight) => _flightsService.CreateFlight(flight);
 
         [HttpPut("{rab}/{departure}")]
-        public IActionResult UpdateFlight(string rab, DateTime departure, bool status)
+        public IActionResult UpdateFlight(string rab, DateTime departure, bool status, Flight flight)
         {
-            _flightsService.UpdateFlight(rab, departure, status);
+            _flightsService.UpdateFlight(rab, departure, status, flight);
 
             return Ok();
         }
