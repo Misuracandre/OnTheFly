@@ -27,6 +27,14 @@ namespace OnTheFlyApp.AirCraftService.Service
 
         public AirCraft GetByRab(string rab) => _aircraft.Find(a => a.Rab == rab).FirstOrDefault();
 
+        public List<AirCraft> GetByCompany(string cnpj)
+        {
+            List<AirCraft> aircrafts = new();
+            aircrafts = _aircraft.Find<AirCraft>(a => a.Company.Cnpj == cnpj).ToList();
+
+            return aircrafts;
+        }
+
         public AirCraft Create(AirCraft aircraft)
         {
             aircraft.Id = "";
