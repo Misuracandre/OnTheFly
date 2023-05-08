@@ -9,7 +9,7 @@ namespace OnTheFlyApp.FlightService.Services
     public class FlightsService
     {
         private readonly IMongoCollection<Flight> _flight;
-        private readonly IMongoCollection<Flight> _flightDeactivated;
+        private readonly IMongoCollection<Flight> _deactivated;
         private readonly IMongoCollection<AirCraft> _airCraft;
         private readonly IMongoCollection<Airport> _airport;
 
@@ -22,12 +22,12 @@ namespace OnTheFlyApp.FlightService.Services
         {
             var client = new MongoClient(settings.ConnectionString);
 
-            var database = client.GetDatabase(settings.DatabaseName);
+            var database = client.GetDatabase(settings.Database);
 
-            _flight = database.GetCollection<Flight>(settings.FlightCollectionName);
-            _flightDeactivated = database.GetCollection<Flight>(settings.FlightDeactivatedCollectionName);
-            _airCraft = database.GetCollection<AirCraft>(settings.FlightAirCraftCollectionName);
-            _airport = database.GetCollection<Airport>(settings.FlightAirportCollectionName);
+            _flight = database.GetCollection<Flight>(settings.FlightCollection);
+            _deactivated = database.GetCollection<Flight>(settings.FlightDeactivatedCollection);
+            _airCraft = database.GetCollection<AirCraft>(settings.FlightAirCraftCollection);
+            _airport = database.GetCollection<Airport>(settings.FlightAirportCollection);
         }
 
         public List<Flight> GetAll()
@@ -35,13 +35,13 @@ namespace OnTheFlyApp.FlightService.Services
             List<Flight> flights = new();
 
             flights = _flight.Find<Flight>(f => true).ToList();
-            flights.AddRange(_flightDeactivated.Find(fd => true).ToList());
+            //flights.AddRange(_flightDeactivated.Find(fd => true).ToList());
 
             return flights;
         }
 
-        public List<Flight> GetActivated() => _flight.Find(p => true).ToList();
-        //public List<Flight> GetDeactivated() => _flight.Find(p => false).ToList();
+        //public List<Flight> GetActivated() => _flight.Find(p => true).ToList();
+        public List<Flight> GetDeactivated() => _flight.Find(p => false).ToList();
 
         public Flight GetFlightByRabAndSchedule(string rab, DateTime Schedule)
         {
@@ -86,11 +86,17 @@ namespace OnTheFlyApp.FlightService.Services
 
             try
             {
+                //Verifica se a companhia aérea está restrita
+                var airCraft = _airCraft.Find(ac => ac.Rab == flight.Plane.Rab && ac.Company.Status == true).FirstOrDefault();
+                if (airCraft == null)
+                {
+                    throw new ArgumentException("The aircraft company is not authorized to operate flights.");
+                }
                 //Busca informaçoes da companhia aérea              
-                HttpResponseMessage airlineResponse = await FlightsService.flightClient.GetAsync("https://localhost:7219/api/CompaniesService/" + flight.Plane.Company.Cnpj);
-                airlineResponse.EnsureSuccessStatusCode();
-                string companyJson = await airlineResponse.Content.ReadAsStringAsync();
-                company = JsonConvert.DeserializeObject<Company>(companyJson);
+                //HttpResponseMessage airlineResponse = await FlightsService.flightClient.GetAsync("https://localhost:7219/api/CompaniesService/" + flight.Plane.Company.Cnpj);
+                //airlineResponse.EnsureSuccessStatusCode();
+                //string companyJson = await airlineResponse.Content.ReadAsStringAsync();
+                //company = JsonConvert.DeserializeObject<Company>(companyJson);
             }
             catch (HttpRequestException e)
             {

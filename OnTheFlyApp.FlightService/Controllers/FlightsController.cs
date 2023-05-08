@@ -21,7 +21,7 @@ namespace OnTheFlyApp.FlightService.Controllers
         public ActionResult<List<Flight>> Get() => _flightsService.GetAll();
 
         [HttpGet("activated", Name = "GetActivated")]
-        public ActionResult<List<Flight>> GetActivated() => _flightsService.GetActivated();
+        public ActionResult<List<Flight>> GetDeactivated() => _flightsService.GetDeactivated();
 
         [HttpGet("AirCraftAndSchedule", Name = "GetByAirCraftAndSchedule")]
         public ActionResult<Flight> GetFlightByRabAndSchedule(string rab, DateTime schedule) => _flightsService.GetFlightByRabAndSchedule(rab, schedule);
