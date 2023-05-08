@@ -6,6 +6,7 @@ using MongoDB.Bson;
 using OnTheFly.Models;
 using OnTheFlyApp.CompanyService.Service;
 using OnTheFlyApp.Services;
+using Utility;
 
 namespace OnTheFlyApp.CompanyService.Controllers
 {
@@ -16,9 +17,11 @@ namespace OnTheFlyApp.CompanyService.Controllers
     {
         private readonly CompaniesService _companyService;
         static readonly PostOfficesService _addressCep = new PostOfficesService();
-        public CompaniesServiceController(CompaniesService companyService)
+        private readonly Util _util;
+        public CompaniesServiceController(CompaniesService companyService, Util util)
         {
             _companyService = companyService;
+            _util = util;
         }
 
         [HttpGet(Name = "GetAll")]
@@ -26,27 +29,51 @@ namespace OnTheFlyApp.CompanyService.Controllers
 
         [HttpGet("activated/", Name = "GetActivated")]
         public ActionResult<List<Company>> GetActivated() => _companyService.GetActivated();
-        
-        [HttpGet("disable/", Name = "GetActivated")]
+
+        [HttpGet("disable/", Name = "GetDisable")]
         public ActionResult<List<Company>> GetDisable() => _companyService.GetDisable();
 
-        [HttpGet("cnpj/", Name = "GetActivated")]
+        [HttpGet("cnpj/", Name = "GetCnpj")]
         public ActionResult<Company> GetCnpj(string cnpj) => _companyService.GetByCompany(cnpj);
 
         [HttpPost]
         public ActionResult<Company> Create(Company company)
         {
             company.Id = "";
-            if (_companyService.GetByCompany(company.Cnpj) != null)
-                throw new Exception("Companhia já cadastrada");
-            if (company.NameOpt == "string" || company.NameOpt == string.Empty) { company.NameOpt = company.Name; }
-            if (company.Name == "string" || company.Name == string.Empty)
-                throw new Exception("Campo nome vazio");
-            if (company.Cnpj.Length != 14 || company.Cnpj == null)
-                throw new Exception("Cnpj Inválido");
+            company.Cnpj = _util.JustDigits(company.Cnpj);
+
+            try
+            {
+                if (_util.VerifyCnpj(company.Cnpj) == false)
+                    throw new Exception();
+            }
+            catch (Exception) { return BadRequest("Cnpj inválido"); }
+
+            try
+            {
+                if (_companyService.GetByCompany(company.Cnpj) != null)
+                    throw new Exception();
+            }
+            catch (Exception) { return BadRequest("Companhia já cadastrada"); }
+
+            if (company.NameOpt == "string" || company.NameOpt == string.Empty)
+                { company.NameOpt = company.Name; }
+
+            try
+            {
+                if (company.Name == "string" || company.Name == string.Empty)
+                    throw new Exception();
+            }
+            catch (Exception) { return BadRequest("Campo nome vazio"); }
+
             var newAddress = _addressCep.GetAddress(company.Address.ZipCode).Result;
-            if (newAddress == null || company.Address.Number == 0)
-                throw new Exception("Endereço inválido");
+
+            try
+            {
+                if (newAddress == null || company.Address.Number == 0)
+                    throw new Exception();
+            }
+            catch (Exception) { return BadRequest("Endereço inválido"); }
 
             newAddress.Number = company.Address.Number;
             company.Address = newAddress;
@@ -55,9 +82,9 @@ namespace OnTheFlyApp.CompanyService.Controllers
             {
                 _companyService.Create(company);
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                throw new Exception("Endereço já cadastrado");
+                return BadRequest("Endereço já cadastrado");
             }
             return company;
         }
@@ -65,7 +92,7 @@ namespace OnTheFlyApp.CompanyService.Controllers
         [HttpPut("{cnpj}")]
         public async Task<HttpStatusCode> Update(string cnpj, bool status)
         {
-            if (_companyService.GetByCompany(cnpj) == null) throw new Exception("Não encontrada");
+            if (_companyService.GetByCompany(cnpj) == null) throw new Exception("Companhia não encontrada");
             try
             {
                 await _companyService.Update(cnpj, status);
@@ -81,8 +108,8 @@ namespace OnTheFlyApp.CompanyService.Controllers
         [HttpDelete]
         public HttpStatusCode Delete(string cnpj)
         {
-            if(_companyService.GetByCompany(cnpj) == null)
-                    throw new Exception("Não encontrada");
+            if (_companyService.GetByCompany(cnpj) == null)
+                throw new Exception("Não encontrada");
 
             _companyService.Delete(cnpj);
 
