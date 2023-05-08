@@ -27,12 +27,12 @@ namespace OnTheFlyApp.FlightService.Controllers
         public ActionResult<Flight> GetByAirCraftAndDeparture(string rab, DateTime departure) => _flightsService.GetByAirCraftAndDeparture(rab, departure);
 
         [HttpPost]
-        public Flight CreateFlight(Flight flight) => _flightsService.CreateFlight(flight);
+        public async Task<Flight> CreateFlight(Flight flight) => await _flightsService.CreateFlight(flight);
 
         [HttpPut("{rab}/{departure}")]
-        public IActionResult UpdateFlight(string rab, DateTime departure, bool status, Flight flight)
+        public IActionResult UpdateFlight(string rab, DateTime departure, bool status)
         {
-            _flightsService.UpdateFlight(rab, departure, status, flight);
+            _flightsService.UpdateFlight(rab, departure, status);
 
             return Ok();
         }

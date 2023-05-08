@@ -1,7 +1,5 @@
-﻿using System;
-using System.Net;
-using Microsoft.AspNetCore.Mvc;
-using MongoDB.Driver;
+﻿using MongoDB.Driver;
+using Newtonsoft.Json;
 using OnTheFly.Models;
 using OnTheFlyApp.FlightService.Config;
 
@@ -13,6 +11,8 @@ namespace OnTheFlyApp.FlightService.Services
         private readonly IMongoCollection<Flight> _flightDeactivated;
         private readonly IMongoCollection<AirCraft> _airCraft;
         private readonly IMongoCollection<Airport> _airport;
+
+        static readonly HttpClient flightClient = new HttpClient();
 
         public FlightsService(IFlightServiceSettings settings)
         {
@@ -29,6 +29,7 @@ namespace OnTheFlyApp.FlightService.Services
         public List<Flight> GetAll()
         {
             List<Flight> flights = new();
+
             flights = _flight.Find<Flight>(f => true).ToList();
             flights.AddRange(_flightDeactivated.Find(fd => true).ToList());
 
@@ -44,38 +45,79 @@ namespace OnTheFlyApp.FlightService.Services
 
             if (flight == null)
             {
-                throw new ArgumentException("Flight not found for the given aircraft and departure."); ;
+                throw new ArgumentException("Flight not found for the given aircraft and departure.");
             }
             return flight;
         }
 
-        public Flight CreateFlight(Flight flight)
+        public async Task<Flight> CreateFlight(Flight flight)
         {
-            //Verifica se o voo é nacional
-            var destinationAirport = _airport.Find(a => a.Iata == flight.Destiny.Iata && a.Country == "BR").FirstOrDefault();
-            if (destinationAirport == null)
+            if (flight == null)
             {
-                throw new ArgumentException("The flight destination is not a national airport.");
+                throw new ArgumentNullException(nameof(flight), "The flight object cannot be null.");
+            }
+
+            Airport airport = new();
+            string airportApiUrl = "https://localhost:44366/Airport/";
+
+            try
+            {
+                HttpResponseMessage airportResponse = await FlightsService.flightClient.GetAsync(airportApiUrl + flight.Destiny.Iata);
+                airportResponse.EnsureSuccessStatusCode();
+                string airportJson = await airportResponse.Content.ReadAsStringAsync();
+                airport = JsonConvert.DeserializeObject<Airport>(airportJson);
+            }
+            catch (HttpRequestException e)
+            {
+                throw;
+            }
+
+            //Verifica se o voo é nacional
+            if (airport.Country_id != "BR")
+            {
+                throw new ArgumentException("The flight destination must be a national airport.");
+            }
+
+            Company airline = new();
+            string airlineApiUrl = "https://localhost:44366/Company/";
+
+            try
+            {
+                //Busca informaçoes da companhia aérea              
+                HttpResponseMessage airlineResponse = await FlightsService.flightClient.GetAsync(airlineApiUrl + flight.Plane.Company.Cnpj);
+                airlineResponse.EnsureSuccessStatusCode();
+                string airlineJson = await airlineResponse.Content.ReadAsStringAsync();
+                airline = JsonConvert.DeserializeObject<Company>(airlineJson);
+            }
+            catch (HttpRequestException e)
+            {
+                throw;
+            }
+            
+
+            if (airline.Status != true)
+            {
+                throw new ArgumentException("the aircraft company is not authorized to operate flights.");
             }
 
             //Verifica se a companhia aérea está restrita
-            var airCraft = _airCraft.Find(ac => ac.Rab == flight.Plane.Rab && ac.Company.Status == true).FirstOrDefault();
-            if (airCraft == null)
-            {
-                throw new ArgumentException("The aircraft company is not authorized to operate flights.");
-            }
+            //var airCraft = _airCraft.Find(ac => ac.Rab == flight.Plane.Rab && ac.Company.Status == true).FirstOrDefault();
+            //if (airCraft == null)
+            //{
+            //    throw new ArgumentException("The aircraft company is not authorized to operate flights.");
+            //}
 
             _flight.InsertOne(flight);
 
             return flight;
         }
 
-        public Flight UpdateFlight(string rab, DateTime departure, bool status, Flight flight)
+        public Flight UpdateFlight(string rab, DateTime departure, bool status)
         {
-            if (flight == null)
-            {
-                throw new ArgumentException("Flight cannot be null.");
-            }
+            //if (flight == null)
+            //{
+            //    throw new ArgumentException("Flight cannot be null.");
+            //}
 
             var filter = Builders<Flight>.Filter.Eq(f => f.Plane.Rab, rab) &
                 Builders<Flight>.Filter.Eq("Departure", departure);
