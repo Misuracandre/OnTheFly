@@ -1,8 +1,13 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Data;
+using System.Net;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using OnTheFly.Models;
+using OnTheFly.Models.Dto;
 using OnTheFlyApp.CompanyService.Service;
+using OnTheFlyApp.Services;
+using Utility;
 
 namespace OnTheFlyApp.CompanyService.Controllers
 {
@@ -12,57 +17,108 @@ namespace OnTheFlyApp.CompanyService.Controllers
     public class CompaniesServiceController : ControllerBase
     {
         private readonly CompaniesService _companyService;
-
-        public CompaniesServiceController(CompaniesService companyService)
+        static readonly PostOfficesService _addressCep = new PostOfficesService();
+        private readonly Util _util;
+        public CompaniesServiceController(CompaniesService companyService, Util util)
         {
             _companyService = companyService;
+            _util = util;
         }
 
         [HttpGet(Name = "GetAll")]
-        public ActionResult<List<Company>> GetAll() => _companyService.GetAll();
+        public ActionResult<List<CompanyDTO>> GetAll() => _companyService.GetAll();
 
-        [HttpGet("activated",Name ="GetActivated")]
-        public ActionResult<List<Company>> GetActiveted() => _companyService.GetActiveted();
+        [HttpGet("activated/", Name = "GetActivated")]
+        public ActionResult<List<CompanyDTO>> GetActivated() => _companyService.GetActivated();
 
-        [HttpGet("cnpj", Name = "GetCpnj")]
-        public ActionResult<Company> GetActiveted(string cnpj) => _companyService.GetByCompany(cnpj);
+        [HttpGet("disable/", Name = "GetDisable")]
+        public ActionResult<List<CompanyDTO>> GetDisable() => _companyService.GetDisable();
+
+        [HttpGet("cnpj/", Name = "GetCnpj")]
+        public ActionResult<CompanyDTO> GetCnpj(string cnpj) => _companyService.GetByCompany(cnpj);
 
         [HttpPost]
-        public ActionResult<Company> Create(Company company)
+        public ActionResult<CompanyDTO> Create(CompanyDTO companydto)
         {
+            Company company = new(companydto);
             company.Id = "";
-            _companyService.Create(company);
+            company.Cnpj = _util.JustDigits(company.Cnpj);
 
-            return company;
+            try
+            {
+                if (_util.VerifyCnpj(company.Cnpj) == false)
+                    throw new Exception();
+            }
+            catch (Exception) { return BadRequest("Cnpj inválido"); }
+
+            try
+            {
+                if (_companyService.GetByCompany(company.Cnpj) != null)
+                    throw new Exception();
+            }
+            catch (Exception) { return BadRequest("Companhia já cadastrada"); }
+
+            if (company.NameOpt == "string" || company.NameOpt == string.Empty)
+                { company.NameOpt = company.Name; }
+
+            try
+            {
+                if (company.Name == "string" || company.Name == string.Empty)
+                    throw new Exception();
+            }
+            catch (Exception) { return BadRequest("Campo nome vazio"); }
+
+            var newAddress = _addressCep.GetAddress(company.Address.ZipCode).Result;
+
+            try
+            {
+                if (newAddress == null || company.Address.Number == 0)
+                    throw new Exception();
+            }
+            catch (Exception) { return BadRequest("Endereço inválido"); }
+
+            newAddress.Number = company.Address.Number;
+            company.Address = newAddress;
+            CompanyDTO companyReturn = new();
+            
+            try
+            {
+                companyReturn = new(_companyService.Create(company));
+            }
+            catch (Exception)
+            {
+                return BadRequest("Endereço já cadastrado");
+            }
+            return companyReturn;
         }
 
         [HttpPut("{cnpj}")]
-        public IActionResult Update(string cnpj, bool status)
+        public async Task<ActionResult<CompanyDTO>> Update(string cnpj, bool status)
         {
-            var comp = _companyService.GetByCompany(cnpj); 
+            if (_companyService.GetByCompany(cnpj) == null) throw new Exception("Companhia não encontrada");
 
-            if (comp == null)
+            CompanyDTO companyReturn = new();
+            try
             {
-                return NotFound();
+                companyReturn = new(await _companyService.Update(cnpj, status));
             }
-            comp = _companyService.Update(cnpj, status);
+            catch (Exception)
+            {
+                throw new Exception("Companhia sem avião");
+            }
 
-            return Ok(comp);
+            return Ok(companyReturn);
         }
 
         [HttpDelete]
-        public IActionResult Delete(string cnpj)
+        public HttpStatusCode Delete(string cnpj)
         {
-            var company = _companyService.GetByCompany(cnpj);
-
-            if (company == null)
-            {
-                return NotFound();
-            }
+            if (_companyService.GetByCompany(cnpj) == null)
+                throw new Exception("Não encontrada");
 
             _companyService.Delete(cnpj);
 
-            return Ok();
+            return HttpStatusCode.OK;
         }
     }
 }

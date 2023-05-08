@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using OnTheFly.Models.Dto;
 
 namespace OnTheFly.Models
 {
@@ -13,7 +14,7 @@ namespace OnTheFly.Models
     {
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
-        [StringLength(14)]
+        [StringLength(18)]
         public string Cnpj { get; set; }
         [StringLength(30)]
         public string? Name { get; set; }
@@ -22,5 +23,16 @@ namespace OnTheFly.Models
         public DateTime DtOpen { get; set; }
         public bool? Status { get; set; }
         public Address Address { get; set; }
+
+        public Company() { }
+        public Company(CompanyDTO company)
+        {
+            Cnpj = company.Cnpj;
+            Name = company.Name;
+            NameOpt = company.NameOpt;
+            DtOpen = company.DtOpen;
+            Status = company.Status;
+            Address = company.Address;
+        }
     }
 }

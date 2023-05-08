@@ -8,7 +8,7 @@ namespace Utility
         public string JustDigits(string text)
         {
             if (text == "" || text == null) return null;
-            string removeChars = " .?&^$#@!()+-,:;<>’\'-_*abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            string removeChars = " .?&^$#@/!()+-,:;<>’\'-_*abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
             string result = text;
 
             foreach (char c in removeChars)
@@ -50,7 +50,7 @@ namespace Utility
             return true; 
         }
 
-        public static bool IsCnpjValid(string cnpj)
+        public bool VerifyCnpj(string cnpj)
         {
             if (string.IsNullOrEmpty(cnpj) || cnpj.Length != 14)
             {
@@ -58,8 +58,7 @@ namespace Utility
             }
             int[] multiplier1 = new int[12] { 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2 };
             int[] multiplier2 = new int[13] { 6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2 };
-            cnpj = cnpj.Trim();
-            cnpj = cnpj.Replace(".", "").Replace("-", "").Replace("/", "");
+
             if (cnpj.Length != 14)
             {
                 return false;

@@ -20,5 +20,16 @@ namespace OnTheFly.Models.Dto
         public DateTime DtOpen { get; set; }
         public bool? Status { get; set; }
         public Address Address { get; set; }
+
+        public CompanyDTO() { }
+        public CompanyDTO(Company company)
+        {
+            Cnpj = company.Cnpj;
+            Name = company.Name;
+            NameOpt = company.NameOpt;
+            DtOpen = company.DtOpen;
+            Status = company.Status;
+            Address = company.Address;
+        }
     }
 }
