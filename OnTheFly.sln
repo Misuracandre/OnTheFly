@@ -3,21 +3,23 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33424.131
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnTheFlyApp", "OnTheFly\OnTheFlyApp.csproj", "{28D58904-9823-4396-AF66-7F8EACC21508}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnTheFlyApp", "OnTheFly\OnTheFlyApp.csproj", "{28D58904-9823-4396-AF66-7F8EACC21508}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnTheFly.Models", "OnTheFly.Models\OnTheFly.Models.csproj", "{384B5D6E-C793-412F-9956-7ED8B961F473}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnTheFly.Models", "OnTheFly.Models\OnTheFly.Models.csproj", "{384B5D6E-C793-412F-9956-7ED8B961F473}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnTheFlyApp.PassengerService", "OnTheFlyApp.PassengerService\OnTheFlyApp.PassengerService.csproj", "{5C1482D9-6A13-4679-82BA-0292BB3FDB1D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnTheFlyApp.PassengerService", "OnTheFlyApp.PassengerService\OnTheFlyApp.PassengerService.csproj", "{5C1482D9-6A13-4679-82BA-0292BB3FDB1D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnTheFlyApp.CompanyService", "OnTheFlyApp.CompanyService\OnTheFlyApp.CompanyService.csproj", "{7A7F84A9-2766-4D6C-9AF6-921819DB5206}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnTheFlyApp.CompanyService", "OnTheFlyApp.CompanyService\OnTheFlyApp.CompanyService.csproj", "{7A7F84A9-2766-4D6C-9AF6-921819DB5206}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnTheFlyApp.FlightService", "OnTheFlyApp.FlightService\OnTheFlyApp.FlightService.csproj", "{D6242AE5-6DCF-4957-8672-881D9B8ED708}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnTheFlyApp.FlightService", "OnTheFlyApp.FlightService\OnTheFlyApp.FlightService.csproj", "{D6242AE5-6DCF-4957-8672-881D9B8ED708}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnTheFlyApp.AirCraftService", "OnTheFlyApp.AirCraftService\OnTheFlyApp.AirCraftService.csproj", "{671DC203-8130-4DF6-B536-0D09923D9261}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnTheFlyApp.AirCraftService", "OnTheFlyApp.AirCraftService\OnTheFlyApp.AirCraftService.csproj", "{671DC203-8130-4DF6-B536-0D09923D9261}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnTheFlyApp.SaleService", "OnTheFlyApp.SaleService\OnTheFlyApp.SaleService.csproj", "{B4BAC670-2962-4064-944C-9D196848927C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnTheFlyApp.SaleService", "OnTheFlyApp.SaleService\OnTheFlyApp.SaleService.csproj", "{B4BAC670-2962-4064-944C-9D196848927C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AirportAPI", "AirportAPI\AirportAPI.csproj", "{2E978039-72C6-4AE3-927F-CA0DD5AF83F3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utility", "Utility\Utility.csproj", "{209A0B69-8BD4-4DB8-877B-976D56404B1C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +59,10 @@ Global
 		{2E978039-72C6-4AE3-927F-CA0DD5AF83F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2E978039-72C6-4AE3-927F-CA0DD5AF83F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2E978039-72C6-4AE3-927F-CA0DD5AF83F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{209A0B69-8BD4-4DB8-877B-976D56404B1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{209A0B69-8BD4-4DB8-877B-976D56404B1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{209A0B69-8BD4-4DB8-877B-976D56404B1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{209A0B69-8BD4-4DB8-877B-976D56404B1C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

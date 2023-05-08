@@ -20,7 +20,7 @@ namespace OnTheFlyApp.Controllers
         public async Task<ActionResult<List<Passenger>>> Get() => await _passengerService.FindAll();
 
         [HttpGet("{cpf:length(11)}")]
-        public ActionResult<Passenger> GetByCpf(string cpf) => new Passenger();
+        public async Task<ActionResult<Passenger>> GetByCpf(string cpf) => await _passengerService.FindByCpf(cpf);
 
         [HttpPost]
         public ActionResult<Passenger> Create(Passenger passenger) => new Passenger();
@@ -33,8 +33,9 @@ namespace OnTheFlyApp.Controllers
         }
 
         [HttpDelete("{cpf:length(11)}")]
-        public IActionResult Delete(string cpf)
+        public async Task<ActionResult> Delete(string cpf)
         {
+            if (await _passengerService.Delete(cpf) == null) return NotFound("Registro não encontrado para deletar");
             return NoContent();
         }
     }
