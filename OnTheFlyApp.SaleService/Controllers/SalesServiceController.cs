@@ -25,13 +25,13 @@ namespace OnTheFlyApp.SaleService.Controllers
             return p;
         }
 
-        [HttpGet("{rab}")]
-        public ActionResult<Sale> GetByIdentifier(string rab)
+        [HttpGet("{rab}/{schedule}/{cpf}")]
+        public ActionResult<Sale> GetByIdentifier(string rab, DateTime schedule, string cpf)
         {
             //var p = _saleService.GetByCpf(cpf);
             //if (p == null) return NotFound("Passageiro não encontrado");
             //return Ok(p);
-            return _saleService.GetByIdentifier(rab);
+            return _saleService.GetByIdentifier(rab, schedule, cpf);
         }
 
         [HttpPost]

@@ -27,12 +27,10 @@ namespace OnTheFlyApp.SaleService.Services
             return _sale.Find<Sale>(s => true).ToList();
         }
 
-        public Sale GetByIdentifier(string rab)
+        public Sale GetByIdentifier(string rab, DateTime schedule, string cpf)
         {
-            //Sale s = _sale.Find(s => s.Flight.Departure == schedule && 
-            //                        s.Flight.Plane.Rab == rab && 
-            //                        s.Passengers[0].Cpf == cpf).FirstOrDefault();
-            Sale s = _sale.Find(s => s.Flight.Plane.Rab == rab).FirstOrDefault();
+            Sale s = _sale.Find(s => s.Flight.Departure == schedule && s.Flight.Plane.Rab == rab &&
+                                    s.Passengers[0].Cpf == cpf).FirstOrDefault();
             if (s == null) return null;
             return s;
         }
