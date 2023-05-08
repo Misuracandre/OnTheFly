@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Xml.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using OnTheFly.Models;
@@ -21,7 +22,7 @@ namespace OnTheFlyApp.CompanyService.Controllers
         [HttpGet(Name = "GetAll")]
         public ActionResult<List<Company>> GetAll() => _companyService.GetAll();
 
-        [HttpGet("activated",Name ="GetActivated")]
+        [HttpGet("activated", Name = "GetActivated")]
         public ActionResult<List<Company>> GetActiveted() => _companyService.GetActiveted();
 
         [HttpGet("cnpj", Name = "GetCpnj")]
@@ -39,7 +40,7 @@ namespace OnTheFlyApp.CompanyService.Controllers
         [HttpPut("{cnpj}")]
         public IActionResult Update(string cnpj, bool status)
         {
-            var comp = _companyService.GetByCompany(cnpj); 
+            var comp = _companyService.GetByCompany(cnpj);
 
             if (comp == null)
             {

@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using OnTheFly.Models;
 using OnTheFlyApp.FlightService.Config;
+using static System.Net.WebRequestMethods;
 
 namespace OnTheFlyApp.FlightService.Services
 {
@@ -11,6 +12,9 @@ namespace OnTheFlyApp.FlightService.Services
         private readonly IMongoCollection<Flight> _flightDeactivated;
         private readonly IMongoCollection<AirCraft> _airCraft;
         private readonly IMongoCollection<Airport> _airport;
+
+        //private const string AirportApiUrl = "https://localhost:44366/Airport/";
+        //private const string CompanyApiUrl = "https://localhost:7219/api/CompaniesService/";
 
         static readonly HttpClient flightClient = new HttpClient();
 
@@ -39,9 +43,9 @@ namespace OnTheFlyApp.FlightService.Services
         public List<Flight> GetActivated() => _flight.Find(p => true).ToList();
         //public List<Flight> GetDeactivated() => _flight.Find(p => false).ToList();
 
-        public Flight GetByAirCraftAndDeparture(string rab, DateTime departure)
+        public Flight GetFlightByRabAndSchedule(string rab, DateTime Schedule)
         {
-            var flight = _flight.Find(f => f.Departure == departure && f.Plane.Rab == rab).FirstOrDefault();
+            var flight = _flight.Find(f => f.Schedule == Schedule && f.Plane.Rab == rab).FirstOrDefault();
 
             if (flight == null)
             {
@@ -58,11 +62,11 @@ namespace OnTheFlyApp.FlightService.Services
             }
 
             Airport airport = new();
-            string airportApiUrl = "https://localhost:44366/Airport/";
 
             try
             {
-                HttpResponseMessage airportResponse = await FlightsService.flightClient.GetAsync(airportApiUrl + flight.Destiny.Iata);
+
+                HttpResponseMessage airportResponse = await FlightsService.flightClient.GetAsync("https://localhost:44366/Airport/" + flight.Arrival.Iata);
                 airportResponse.EnsureSuccessStatusCode();
                 string airportJson = await airportResponse.Content.ReadAsStringAsync();
                 airport = JsonConvert.DeserializeObject<Airport>(airportJson);
@@ -78,16 +82,15 @@ namespace OnTheFlyApp.FlightService.Services
                 throw new ArgumentException("The flight destination must be a national airport.");
             }
 
-            Company airline = new();
-            string airlineApiUrl = "https://localhost:44366/Company/";
+            Company company = new();
 
             try
             {
                 //Busca informaçoes da companhia aérea              
-                HttpResponseMessage airlineResponse = await FlightsService.flightClient.GetAsync(airlineApiUrl + flight.Plane.Company.Cnpj);
+                HttpResponseMessage airlineResponse = await FlightsService.flightClient.GetAsync("https://localhost:7219/api/CompaniesService/" + flight.Plane.Company.Cnpj);
                 airlineResponse.EnsureSuccessStatusCode();
-                string airlineJson = await airlineResponse.Content.ReadAsStringAsync();
-                airline = JsonConvert.DeserializeObject<Company>(airlineJson);
+                string companyJson = await airlineResponse.Content.ReadAsStringAsync();
+                company = JsonConvert.DeserializeObject<Company>(companyJson);
             }
             catch (HttpRequestException e)
             {
@@ -95,7 +98,7 @@ namespace OnTheFlyApp.FlightService.Services
             }
             
 
-            if (airline.Status != true)
+            if (company.Status != true)
             {
                 throw new ArgumentException("the aircraft company is not authorized to operate flights.");
             }
@@ -112,7 +115,7 @@ namespace OnTheFlyApp.FlightService.Services
             return flight;
         }
 
-        public Flight UpdateFlight(string rab, DateTime departure, bool status)
+        public Flight UpdateFlight(string rab, DateTime Schedule, bool status)
         {
             //if (flight == null)
             //{
@@ -120,7 +123,7 @@ namespace OnTheFlyApp.FlightService.Services
             //}
 
             var filter = Builders<Flight>.Filter.Eq(f => f.Plane.Rab, rab) &
-                Builders<Flight>.Filter.Eq("Departure", departure);
+                Builders<Flight>.Filter.Eq("Schedule", Schedule);
 
             var options = new FindOneAndUpdateOptions<Flight, Flight> { ReturnDocument = ReturnDocument.After };
 
@@ -131,11 +134,21 @@ namespace OnTheFlyApp.FlightService.Services
             return flightUpdated;
         }
 
-        public void DeleteFlight(string rab, DateTime departure)
+        public async Task DeleteFlight(string rab, DateTime schedule)
         {
-            var filter = Builders<Flight>.Filter.Where(f => f.Plane.Rab == rab && f.Departure == departure);
+            var filter = Builders<Flight>.Filter.Where(f => f.Plane.Rab == rab && f.Schedule == schedule);
+            var flightToDelete = await _flight.Find(filter).FirstOrDefaultAsync();
 
-            _flight.DeleteOne(filter);
+            if (flightToDelete == null)
+            {
+                throw new ArgumentException("Flight not found.");
+            }
+
+            flightToDelete.Status = false;
+
+            await _flightDeactivated.InsertOneAsync(flightToDelete);
+
+            await _flight.DeleteOneAsync(filter);
         }
     }
 }

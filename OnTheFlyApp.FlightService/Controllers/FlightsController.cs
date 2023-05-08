@@ -23,31 +23,31 @@ namespace OnTheFlyApp.FlightService.Controllers
         [HttpGet("activated", Name = "GetActivated")]
         public ActionResult<List<Flight>> GetActivated() => _flightsService.GetActivated();
 
-        [HttpGet("AirCraftAndDeparture", Name = "GetByAirCraftAndDeparture")]
-        public ActionResult<Flight> GetByAirCraftAndDeparture(string rab, DateTime departure) => _flightsService.GetByAirCraftAndDeparture(rab, departure);
+        [HttpGet("AirCraftAndSchedule", Name = "GetByAirCraftAndSchedule")]
+        public ActionResult<Flight> GetFlightByRabAndSchedule(string rab, DateTime schedule) => _flightsService.GetFlightByRabAndSchedule(rab, schedule);
 
         [HttpPost]
         public async Task<Flight> CreateFlight(Flight flight) => await _flightsService.CreateFlight(flight);
 
-        [HttpPut("{rab}/{departure}")]
-        public IActionResult UpdateFlight(string rab, DateTime departure, bool status)
+        [HttpPut("{rab}/{schedule}")]
+        public IActionResult UpdateFlight(string rab, DateTime schedule, bool status)
         {
-            _flightsService.UpdateFlight(rab, departure, status);
+            _flightsService.UpdateFlight(rab, schedule, status);
 
             return Ok();
         }
 
-        [HttpDelete]
-        public IActionResult DeleteFlight(string rab, DateTime departure)
+        [HttpDelete("{rab}/{schedule}", Name = "DeleteFlightByRabAndSchedule")]
+        public async Task<IActionResult> DeleteFlight(string rab, DateTime schedule)
         {
-            var flight = _flightsService.GetByAirCraftAndDeparture(rab, departure);
+            var flight = _flightsService.GetFlightByRabAndSchedule(rab, schedule);
 
             if (flight == null)
             {
                 return NotFound();
             }
 
-            _flightsService.DeleteFlight(rab, departure);
+            await _flightsService.DeleteFlight(rab, schedule);
 
             return Ok();
         }

@@ -11,9 +11,9 @@ namespace OnTheFly.Models.Dto
     public class FlightDTO
     {
         public int Sales { get; set; }
-        public DateTime Departure { get; set; }
+        public DateTime Schedule { get; set; }
         public bool Status { get; set; }
-        public Airport Destiny { get; set; }
+        public Airport Arrival { get; set; }
         public AirCraftDTO Plane { get; set; }
     }
 }

@@ -14,9 +14,9 @@ namespace OnTheFly.Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
         public int Sales { get; set; }
-        public DateTime Departure { get; set; }
+        public DateTime Schedule { get; set; }
         public bool Status { get; set; }
-        public Airport Destiny { get; set; }
+        public Airport Arrival { get; set; }
         public AirCraft Plane { get; set; }
     }
 }
