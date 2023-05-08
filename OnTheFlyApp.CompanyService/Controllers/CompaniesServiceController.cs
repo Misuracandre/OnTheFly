@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using OnTheFly.Models;
+using OnTheFly.Models.Dto;
 using OnTheFlyApp.CompanyService.Service;
 using OnTheFlyApp.Services;
 using Utility;
@@ -25,20 +26,21 @@ namespace OnTheFlyApp.CompanyService.Controllers
         }
 
         [HttpGet(Name = "GetAll")]
-        public ActionResult<List<Company>> GetAll() => _companyService.GetAll();
+        public ActionResult<List<CompanyDTO>> GetAll() => _companyService.GetAll();
 
         [HttpGet("activated/", Name = "GetActivated")]
-        public ActionResult<List<Company>> GetActivated() => _companyService.GetActivated();
+        public ActionResult<List<CompanyDTO>> GetActivated() => _companyService.GetActivated();
 
         [HttpGet("disable/", Name = "GetDisable")]
-        public ActionResult<List<Company>> GetDisable() => _companyService.GetDisable();
+        public ActionResult<List<CompanyDTO>> GetDisable() => _companyService.GetDisable();
 
         [HttpGet("cnpj/", Name = "GetCnpj")]
-        public ActionResult<Company> GetCnpj(string cnpj) => _companyService.GetByCompany(cnpj);
+        public ActionResult<CompanyDTO> GetCnpj(string cnpj) => _companyService.GetByCompany(cnpj);
 
         [HttpPost]
-        public ActionResult<Company> Create(Company company)
+        public ActionResult<CompanyDTO> Create(CompanyDTO companydto)
         {
+            Company company = new(companydto);
             company.Id = "";
             company.Cnpj = _util.JustDigits(company.Cnpj);
 
@@ -77,32 +79,35 @@ namespace OnTheFlyApp.CompanyService.Controllers
 
             newAddress.Number = company.Address.Number;
             company.Address = newAddress;
-
+            CompanyDTO companyReturn = new();
+            
             try
             {
-                _companyService.Create(company);
+                companyReturn = new(_companyService.Create(company));
             }
             catch (Exception)
             {
                 return BadRequest("Endereço já cadastrado");
             }
-            return company;
+            return companyReturn;
         }
 
         [HttpPut("{cnpj}")]
-        public async Task<HttpStatusCode> Update(string cnpj, bool status)
+        public async Task<ActionResult<CompanyDTO>> Update(string cnpj, bool status)
         {
             if (_companyService.GetByCompany(cnpj) == null) throw new Exception("Companhia não encontrada");
+
+            CompanyDTO companyReturn = new();
             try
             {
-                await _companyService.Update(cnpj, status);
+                companyReturn = new(await _companyService.Update(cnpj, status));
             }
             catch (Exception)
             {
                 throw new Exception("Companhia sem avião");
             }
 
-            return HttpStatusCode.OK;
+            return Ok(companyReturn);
         }
 
         [HttpDelete]

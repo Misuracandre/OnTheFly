@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 using OnTheFly.Models;
+using OnTheFly.Models.Dto;
 using OnTheFlyApp.CompanyService.Config;
 using OnTheFlyApp.Services;
 
@@ -24,26 +25,59 @@ namespace OnTheFlyApp.CompanyService.Service
             _address = database.GetCollection<Address>(settings.CompanyAddressCollectionName);
         }
 
-        public List<Company> GetAll()
+        public List<CompanyDTO> GetAll()
         {
-            List<Company> companies = new();
-            companies = _company.Find(c => true).ToList();
-            companies.AddRange(_companyDeactivated.Find(cd => true).ToList());
+            List<Company> companieslst = new();
+            companieslst = _company.Find(c => true).ToList();
+            companieslst.AddRange(_companyDeactivated.Find(cd => true).ToList());
 
-            return companies;
+            List<CompanyDTO> lstReturn = new();
+            foreach (var company in companieslst) { CompanyDTO companyDTO = new(); lstReturn.Add(companyDTO = new(company)); }
+
+            return lstReturn;
         }
 
-        public List<Company> GetActivated() => _company.Find(c => true).ToList();
-
-        public List<Company> GetDisable() => _companyDeactivated.Find(c => true).ToList();
-
-        public Company GetByCompany(string cnpj)
+        public List<CompanyDTO> GetActivated()
         {
+            List<Company> lstActivated = _company.Find(c => true).ToList();
+            if (lstActivated == null) return null;
+
+            List<CompanyDTO> lstReturn = new();
+            foreach (var company in lstActivated)
+            {
+                CompanyDTO companyDTO = new();
+                lstReturn.Add(companyDTO = new(company));
+            }
+
+            return lstReturn;
+        }
+
+        public List<CompanyDTO> GetDisable()
+        {
+            List<Company> lstDisable = _companyDeactivated.Find(c => true).ToList();
+            if (lstDisable == null) return null;
+
+            List<CompanyDTO> lstReturn = new();
+            foreach (var company in lstDisable)
+            {
+                CompanyDTO companyDTO = new();
+                lstReturn.Add(companyDTO = new(company));
+            }
+
+            return lstReturn;
+        }
+
+        public CompanyDTO GetByCompany(string cnpj)
+        {
+            CompanyDTO companyReturn = new();
+
             var company = _company.Find<Company>(c => c.Cnpj == cnpj).FirstOrDefault();
             if (company == null) { company = _companyDeactivated.Find<Company>(c => c.Cnpj == cnpj).FirstOrDefault(); }
-            if (company == null) return company;
+            if (company == null) return null;
 
-            return company;
+            companyReturn = new(company);
+
+            return companyReturn;
         }
 
         public Company Create(Company company)
@@ -57,7 +91,7 @@ namespace OnTheFlyApp.CompanyService.Service
             return company;
         }
 
-        public async Task<ActionResult<Company>> Update(string cnpj, bool status)
+        public async Task<Company> Update(string cnpj, bool status)
         {
             var options = new FindOneAndUpdateOptions<Company, Company> { ReturnDocument = ReturnDocument.After };
             var update = Builders<Company>.Update.Set("Status", status);
