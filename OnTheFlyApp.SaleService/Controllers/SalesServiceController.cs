@@ -21,27 +21,26 @@ namespace OnTheFlyApp.SaleService.Controllers
         public ActionResult<List<Sale>> Get()
         {
             var p = _saleService.GetAll();
-            if (p.Count == 0) return NotFound("Nenhum passageiro cadastrado");
+            if (p.Count == 0) return NotFound("Nenhuma venda cadastrado");
             return p;
         }
 
         [HttpGet("{rab}/{schedule}/{cpf}")]
         public ActionResult<Sale> GetByIdentifier(string rab, DateTime schedule, string cpf)
         {
-            //var p = _saleService.GetByCpf(cpf);
-            //if (p == null) return NotFound("Passageiro não encontrado");
-            //return Ok(p);
-            return _saleService.GetByIdentifier(rab, schedule, cpf);
+            var s = _saleService.GetByIdentifier(rab, schedule, cpf);
+            if (s == null) return NotFound("Venda não encontrada");
+            return Ok(s);
         }
 
         [HttpPost]
-        public ActionResult<SaleDTO> Create(SaleDTO sale)
+        public ActionResult<Sale> Create(SaleDTO sale)
         {
             var s = _saleService.Create(sale);
             if (s == null)
-                return BadRequest("Passageiro não cadastrado");
+                return BadRequest("Venda não cadastrada");
             return Ok(s);
-            return new SaleDTO();
+            return new Sale();
         }
 
         [HttpPut("{rab}/{schedule}/{cpf}")]
@@ -60,7 +59,7 @@ namespace OnTheFlyApp.SaleService.Controllers
             //if (await _saleService.Delete(cpf) != 1)
             //    return NotFound("Passageiro não deletado");
 
-            return Ok("Passageiro deletado");
+            return Ok("Venda deletada");
         }
     }
 }
