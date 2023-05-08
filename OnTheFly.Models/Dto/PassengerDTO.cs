@@ -4,19 +4,13 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MongoDB.Bson;
-using MongoDB.Bson.IO;
 using MongoDB.Bson.Serialization.Attributes;
-using OnTheFly.Models.Dto;
+using MongoDB.Bson;
 
-namespace OnTheFly.Models
+namespace OnTheFly.Models.Dto
 {
-    public class Passenger
+    public class PassengerDTO
     {
-
-        [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; }
 
         [StringLength(14)]
         public string Cpf { get; set; }
@@ -30,18 +24,19 @@ namespace OnTheFly.Models
         [StringLength(14)]
         public string? Phone { get; set; }
 
+
         public DateTime DtBirth { get; set; }
 
         public DateTime DtRegister { get; set; }
         public bool? Status { get; set; }
 
+
         public Address Address { get; set; }
 
-        public Passenger() { }
+        public PassengerDTO() { }
 
-        public Passenger(PassengerDTO passenger)
+        public PassengerDTO(Passenger passenger)
         {
-            this.Id = string.Empty;
             this.Cpf = passenger.Cpf;
             this.Name = passenger.Name;
             this.Gender = passenger.Gender.ToUpper();
@@ -51,18 +46,6 @@ namespace OnTheFly.Models
             this.Status = passenger.Status;
             this.Address = passenger.Address;
             this.Address.ZipCode = passenger.Address.ZipCode;
-        }
-
-        public Passenger(PassengerInsert passenger)
-        {
-            this.Id = string.Empty;
-            this.Cpf = passenger.Cpf;
-            this.Name = passenger.Name;
-            this.Gender = passenger.Gender.ToUpper();
-            this.Phone = passenger.Phone;
-            this.DtBirth = passenger.DtBirth;
-            this.DtRegister = passenger.DtRegister;
-            this.Status = passenger.Status;
         }
     }
 }
