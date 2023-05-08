@@ -82,29 +82,29 @@ namespace OnTheFlyApp.FlightService.Services
                 throw new ArgumentException("The flight destination must be a national airport.");
             }
 
-            Company company = new();
+            AirCraft airCraft = new();
 
             try
             {
                 //Verifica se a companhia aérea está restrita
-                var airCraft = _airCraft.Find(ac => ac.Rab == flight.Plane.Rab && ac.Company.Status == true).FirstOrDefault();
-                if (airCraft == null)
-                {
-                    throw new ArgumentException("The aircraft company is not authorized to operate flights.");
-                }
+                //var airCraft = _airCraft.Find(ac => ac.Rab == flight.Plane.Rab && ac.Company.Status == true).FirstOrDefault();
+                //if (airCraft == null)
+                //{
+                //    throw new ArgumentException("The aircraft company is not authorized to operate flights.");
+                //}
                 //Busca informaçoes da companhia aérea              
-                //HttpResponseMessage airlineResponse = await FlightsService.flightClient.GetAsync("https://localhost:7219/api/CompaniesService/" + flight.Plane.Company.Cnpj);
-                //airlineResponse.EnsureSuccessStatusCode();
-                //string companyJson = await airlineResponse.Content.ReadAsStringAsync();
-                //company = JsonConvert.DeserializeObject<Company>(companyJson);
+                HttpResponseMessage airCraftResponse = await FlightsService.flightClient.GetAsync("https://localhost:7117/api/AirCraftsService/" + flight.Plane.Rab);
+                airCraftResponse.EnsureSuccessStatusCode();
+                string airCraftJson = await airCraftResponse.Content.ReadAsStringAsync();
+                airCraft = JsonConvert.DeserializeObject<AirCraft>(airCraftJson);
             }
             catch (HttpRequestException e)
             {
                 throw;
             }
-            
 
-            if (company.Status != true)
+
+            if (airCraft.Company.Status != true)
             {
                 throw new ArgumentException("the aircraft company is not authorized to operate flights.");
             }
@@ -152,7 +152,7 @@ namespace OnTheFlyApp.FlightService.Services
 
             flightToDelete.Status = false;
 
-            await _flightDeactivated.InsertOneAsync(flightToDelete);
+            await _deactivated.InsertOneAsync(flightToDelete);
 
             await _flight.DeleteOneAsync(filter);
         }
