@@ -13,17 +13,17 @@ namespace OnTheFlyApp.PassengerService.Service
     public class PassengersService
     {
         private readonly IMongoCollection<Passenger> _passenger;
-        private readonly IMongoCollection<Passenger> _passengerDeactivated;
+        private readonly IMongoCollection<Passenger> _passengerDisabled;
         private readonly IMongoCollection<Address> _address;
         private readonly Util _util;
 
         public PassengersService(IPassengerServiceSettings settings, Util util)
         {
             var client = new MongoClient(settings.ConnectionString);
-            var database = client.GetDatabase(settings.DatabaseName);
-            _passenger = database.GetCollection<Passenger>(settings.PassengerCollectionName);
-            _passengerDeactivated = database.GetCollection<Passenger>(settings.PassengerDeactivatedCollectionName);
-            _address = database.GetCollection<Address>(settings.PassengerAddressCollectionName);
+            var database = client.GetDatabase(settings.Database);
+            _passenger = database.GetCollection<Passenger>(settings.PassengerCollection);
+            _passengerDisabled = database.GetCollection<Passenger>(settings.PassengerDisabledCollection);
+            _address = database.GetCollection<Address>(settings.PassengerAddressCollection);
             _util = util;
         }
 
@@ -31,7 +31,6 @@ namespace OnTheFlyApp.PassengerService.Service
         {
             List<Passenger> passengers = new();
             passengers = _passenger.Find<Passenger>(p => true).ToList();
-            passengers.AddRange(_passengerDeactivated.Find(pd => true).ToList());
 
             List<PassengerDTO> passengerDTOs = new();
             foreach (var passenger in passengers)
@@ -85,8 +84,8 @@ namespace OnTheFlyApp.PassengerService.Service
             if (pa == null) return 0;
 
             pa.Status = false;
-            _passengerDeactivated.InsertOne(pa);
-            var t = _passengerDeactivated.Find(p => p.Cpf == pa.Cpf);
+            _passengerDisabled.InsertOne(pa);
+            var t = _passengerDisabled.Find(p => p.Cpf == pa.Cpf);
             if (t == null) return 0;
 
             if (_passenger.DeleteOne(p => p.Cpf == pa.Cpf).DeletedCount != 1)

@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using OnTheFlyApp.SaleService.config;
 using OnTheFlyApp.SaleService.Services;
+using RabbitMQ.Client;
 using Utility;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,7 @@ builder.Services.Configure<SaleServiceSettings>(builder.Configuration.GetSection
 builder.Services.AddSingleton<ISaleServiceSettings>(s => s.GetRequiredService<IOptions<SaleServiceSettings>>().Value);
 builder.Services.AddSingleton<SalesService>();
 builder.Services.AddSingleton<Util>();
+builder.Services.AddSingleton<ConnectionFactory>();
 
 var app = builder.Build();
 
