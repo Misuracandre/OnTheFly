@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using System.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -31,8 +31,11 @@ namespace OnTheFlyApp.CompanyService.Controllers
         [HttpGet("activated/", Name = "GetActivated")]
         public ActionResult<List<CompanyDTO>> GetActivated() => _companyService.GetActivated();
 
+
+
         [HttpGet("disable/", Name = "GetDisable")]
         public ActionResult<List<CompanyDTO>> GetDisable() => _companyService.GetDisable();
+
 
         [HttpGet("cnpj/", Name = "GetCnpj")]
         public ActionResult<CompanyDTO> GetCnpj(string cnpj) => _companyService.GetByCompany(cnpj);
@@ -95,7 +98,10 @@ namespace OnTheFlyApp.CompanyService.Controllers
         [HttpPut("{cnpj}")]
         public async Task<ActionResult<CompanyDTO>> Update(string cnpj, bool status)
         {
+
+
             if (_companyService.GetByCompany(cnpj) == null) throw new Exception("Companhia não encontrada");
+
 
             CompanyDTO companyReturn = new();
             try
