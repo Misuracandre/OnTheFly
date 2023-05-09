@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using OnTheFly.Models;
 using OnTheFlyApp.Consumer;
@@ -13,10 +14,14 @@ internal class Program
         var factory = new ConnectionFactory() { HostName = "localhost" };
         using var connection = factory.CreateConnection();
 
-        var taskInsertSale = Consumer(connection, "sales");
-        var taskInsertReservation = Consumer(connection, "Reservation");
-        
+        var taskInsertSale = Consumer(connection, "Sales");
+        var taskInsertReservation = Consumer(connection, "Reservations");
+
         await Task.WhenAny(taskInsertSale, taskInsertReservation);
+        //while (true)
+        //{
+        //    Thread.Sleep(1000);
+        //}
     }
 
     static async Task Consumer(IConnection connection, string queueName)
