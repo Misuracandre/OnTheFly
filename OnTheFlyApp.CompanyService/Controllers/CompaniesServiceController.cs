@@ -100,7 +100,7 @@ namespace OnTheFlyApp.CompanyService.Controllers
         {
             var companyResult = _companyService.GetByCompany(cnpj);
             if (companyResult == null )
-                return BadRequest("Não encontrada ou desativada");
+                return BadRequest("Não encontrada");
             if (companyResult.Status == true)
                 return BadRequest("A companhia precisa estar desativada");
 
