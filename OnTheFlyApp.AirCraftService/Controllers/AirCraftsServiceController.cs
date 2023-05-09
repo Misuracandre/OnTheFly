@@ -21,7 +21,7 @@ namespace OnTheFlyApp.AirCraftService.Controllers
         public ActionResult<List<AirCraftDTO>> Get() => _aircraftService.GetAll();
 
         [HttpGet("{rab}",Name = "GetByRab")]
-        public ActionResult<AirCraft> GetByRab(string rab)
+        public ActionResult<AirCraftDTO> GetByRab(string rab)
         {
             var aircraft = _aircraftService.GetByRab(rab);
 
