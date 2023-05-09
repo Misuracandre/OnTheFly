@@ -27,9 +27,9 @@ namespace OnTheFlyApp.FlightService.Services
             var database = client.GetDatabase(settings.Database);
 
             _flight = database.GetCollection<Flight>(settings.FlightCollection);
+            _airport = database.GetCollection<Airport>(settings.AirportCollection);
             _disabled = database.GetCollection<Flight>(settings.DisabledCollection);
             _airCraft = database.GetCollection<AirCraft>(settings.AirCraftCollection);
-            _airport = database.GetCollection<Airport>(settings.AirportCollection);
         }
 
         public List<FlightDTO> GetAll()
@@ -66,7 +66,7 @@ namespace OnTheFlyApp.FlightService.Services
         {
             if (flight == null)
             {
-                throw new ArgumentNullException(nameof(flight), "O voo não pode ser nulo.");
+                throw new ArgumentNullException("O voo não pode ser nulo.");
             }
 
             Airport airport = new();
@@ -149,4 +149,3 @@ namespace OnTheFlyApp.FlightService.Services
         }
     }
 }
-

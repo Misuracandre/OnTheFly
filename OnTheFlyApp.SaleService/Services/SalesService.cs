@@ -168,7 +168,7 @@ namespace OnTheFlyApp.SaleService.Services
             }
             else
             {
-                //if (!PostMQMessage(s, false)) return null;
+                if (!PostMQMessage(s, false)) return null;
                 //while (s == null)
                 //{
                 //    s = _sale.Find(s => s.Flight.Schedule == s.Flight.Schedule &&
@@ -183,7 +183,7 @@ namespace OnTheFlyApp.SaleService.Services
                                            s.Passengers[0].Cpf == s.Passengers[0].Cpf).FirstOrDefaultAsync();
             }
 
-            //_sale.InsertOne(s);
+            _sale.InsertOne(s);
             return s;
         }
     }
