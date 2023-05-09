@@ -10,7 +10,6 @@ using Utility;
 
 namespace OnTheFlyApp.CompanyService.Controllers
 {
-    //https://localhost:7219/api/CompaniesService
     [Route("api/[controller]")]
     [ApiController]
     public class CompaniesServiceController : ControllerBase
@@ -24,16 +23,16 @@ namespace OnTheFlyApp.CompanyService.Controllers
         }
 
         [HttpGet(Name = "GetAll")]
-        public ActionResult<List<CompanyDTO>> GetAll() => _companyService.GetAll();
+        public ActionResult<List<CompanyGetDTO>> GetAll() => _companyService.GetAll();
 
         [HttpGet("disable/", Name = "GetDisable")]
-        public ActionResult<List<CompanyDTO>> GetDisable() => _companyService.GetDisable();
+        public ActionResult<List<CompanyGetDTO>> GetDisable() => _companyService.GetDisable();
 
         [HttpGet("cnpj/", Name = "GetCnpj")]
-        public ActionResult<CompanyDTO> GetCnpj(string cnpj) => _companyService.GetByCompany(cnpj);
+        public ActionResult<CompanyGetDTO> GetCnpj(string cnpj) => _companyService.GetByCompany(cnpj);
 
         [HttpPost]
-        public ActionResult<CompanyDTO> Create(CompanyDTO companydto)
+        public ActionResult<CompanyGetDTO> Create(CompanyInsertDTO companydto)
         {
             Company company = new(companydto);
             company.Cnpj = _util.JustDigits(company.Cnpj);
@@ -44,7 +43,7 @@ namespace OnTheFlyApp.CompanyService.Controllers
 
 
             if (_companyService.GetByCompany(company.Cnpj) != null)
-                return BadRequest("Companhia já cadastrada");
+                return BadRequest("Cnpj já está registrado");
 
 
             if (company.NameOpt == "string" || company.NameOpt == string.Empty)
@@ -56,12 +55,12 @@ namespace OnTheFlyApp.CompanyService.Controllers
             //Método consumindo api busca cep
             var newAddress = _util.GetAddress(company.Address.ZipCode).Result;
 
-            if (newAddress == null || company.Address.Number == 0)
+            if (newAddress.ZipCode == null || company.Address.Number == 0)
                 return BadRequest("Endereço inválido");
 
             newAddress.Number = company.Address.Number;
             company.Address = newAddress;
-            CompanyDTO companyReturn = new();
+            CompanyGetDTO companyReturn = new();
 
             try
             {
@@ -72,17 +71,17 @@ namespace OnTheFlyApp.CompanyService.Controllers
                 return BadRequest("Endereço já cadastrado");
             }
             return companyReturn;
-        }
+        } 
 
         [HttpPut("{cnpj}")]
-        public async Task<ActionResult<CompanyDTO>> Update(string cnpj, bool status)
+        public async Task<ActionResult<CompanyGetDTO>> Update(string cnpj, bool status)
         {
             if (_companyService.GetByCompany(cnpj) == null)
                 throw new Exception("Companhia não encontrada");
             if (status == true && _companyService.GetByCompany(cnpj).Status == true)
                 throw new Exception("Companhia já ativada");
 
-            CompanyDTO companyReturn = new();
+            CompanyGetDTO companyReturn = new();
             try
             {
                 companyReturn = await _companyService.Update(cnpj, status);
@@ -94,18 +93,20 @@ namespace OnTheFlyApp.CompanyService.Controllers
             }
 
             return Ok(companyReturn);
-        }
+        } 
 
         [HttpDelete]
-        public HttpStatusCode Delete(string cnpj)
+        public ActionResult Delete(string cnpj)
         {
             var companyResult = _companyService.GetByCompany(cnpj);
-            if (companyResult == null || companyResult.Status == false)
-                throw new Exception("Não encontrada ou desativada");
+            if (companyResult == null )
+                return BadRequest("Não encontrada ou desativada");
+            if (companyResult.Status == true)
+                return BadRequest("A companhia precisa estar desativada");
 
             _companyService.Delete(cnpj);
 
-            return HttpStatusCode.OK;
+            return Ok("Deletado com sucesso");
         }
     }
 }
