@@ -21,7 +21,7 @@ namespace OnTheFlyApp.FlightService.Controllers
         [HttpGet]
         public List<FlightDTO> Get() => _flightsService.GetAll();
 
-        [HttpGet("activated", Name = "GetActivated")]
+        [HttpGet("disabled", Name = "GetDisabled")]
         public List<Flight> GetDisabled() => _flightsService.GetDisabled();
 
         [HttpGet("{rab}/{schedule}", Name = "GetByAirCraftAndSchedule")]

@@ -32,7 +32,7 @@ namespace OnTheFlyApp.AirCraftService.Controllers
             return aircraft;
         }
 
-        [HttpGet("company/{cnpj}",Name = "GetByCompany")]
+        [HttpGet("{company}/{cnpj}",Name = "GetByCompany")]
         public ActionResult<List<AirCraft>> GetByCompany(string cnpj)
         {
             var aircraft = _aircraftService.GetByCompany(cnpj);
