@@ -32,5 +32,11 @@ namespace OnTheFly.Models.Dto
 
 
         public AddressInsert Address { get; set; }
+
+        public PassengerInsert()
+        {
+            
+        }
+
     }
 }

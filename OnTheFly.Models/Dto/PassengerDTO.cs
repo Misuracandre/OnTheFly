@@ -31,7 +31,7 @@ namespace OnTheFly.Models.Dto
         public bool? Status { get; set; }
 
 
-        public Address Address { get; set; }
+        public AddressDTO Address { get; set; }
 
         public PassengerDTO() { }
 
@@ -44,8 +44,14 @@ namespace OnTheFly.Models.Dto
             this.DtBirth = passenger.DtBirth;
             this.DtRegister = passenger.DtRegister;
             this.Status = passenger.Status;
-            this.Address = passenger.Address;
-            this.Address.ZipCode = passenger.Address.ZipCode;
+            this.Address = new()
+            {
+                ZipCode = passenger.Address.ZipCode,
+                Street = passenger.Address.Street,
+                Number = passenger.Address.Number,
+                City = passenger.Address.City,
+                State = passenger.Address.State,
+            };
         }
     }
 }
