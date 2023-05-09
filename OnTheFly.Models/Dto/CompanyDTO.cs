@@ -11,7 +11,7 @@ namespace OnTheFly.Models.Dto
 {
     public class CompanyDTO
     {
-        [StringLength(14)]
+        [StringLength(18)]
         public string Cnpj { get; set; }
         [StringLength(30)]
         public string? Name { get; set; }
