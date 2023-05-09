@@ -33,6 +33,8 @@ namespace Utility
             }
             int first = soma % 11;
             
+            first = first == 10 ? 0 : first;
+
             if(first != int.Parse(cpf[9].ToString()))
                 return false;
 
@@ -44,6 +46,7 @@ namespace Utility
                 soma += digit * i;
             }
             int second = soma % 11;
+            second = second == 10 ? 0 : second;
             if (second != int.Parse(cpf[10].ToString()))
                 return false;
 
