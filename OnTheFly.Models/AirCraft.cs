@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using OnTheFly.Models.Dto;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,5 +19,16 @@ namespace OnTheFly.Models
         public DateTime DtRegistry { get; set; }
         public DateTime? DtLastFlight { get; set; }
         public Company Company { get; set; }
+
+        public AirCraft() { }
+
+        public AirCraft(AirCraftDTO airCraft)
+        {
+            this.Rab = airCraft.Rab;
+            this.Capacity = airCraft.Capacity;
+            this.DtRegistry = airCraft.DtRegistry;
+            this.DtLastFlight = airCraft.DtLastFlight;
+            this.Company = new Company(airCraft.Company);
+        }
     }
 }

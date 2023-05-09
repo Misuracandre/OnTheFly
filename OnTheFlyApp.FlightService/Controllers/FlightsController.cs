@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 using OnTheFly.Models;
+using OnTheFly.Models.Dto;
 using OnTheFlyApp.FlightService.Services;
 
 namespace OnTheFlyApp.FlightService.Controllers
@@ -18,16 +19,16 @@ namespace OnTheFlyApp.FlightService.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<Flight>> Get() => _flightsService.GetAll();
+        public List<FlightDTO> Get() => _flightsService.GetAll();
 
         [HttpGet("activated", Name = "GetActivated")]
-        public ActionResult<List<Flight>> GetDeactivated() => _flightsService.GetDeactivated();
+        public List<Flight> GetDisabled() => _flightsService.GetDisabled();
 
         [HttpGet("AirCraftAndSchedule", Name = "GetByAirCraftAndSchedule")]
-        public ActionResult<Flight> GetFlightByRabAndSchedule(string rab, DateTime schedule) => _flightsService.GetFlightByRabAndSchedule(rab, schedule);
+        public ActionResult<FlightDTO> GetFlightByRabAndSchedule(string rab, DateTime schedule) => _flightsService.GetFlightByRabAndSchedule(rab, schedule);
 
         [HttpPost]
-        public async Task<Flight> CreateFlight(Flight flight) => await _flightsService.CreateFlight(flight);
+        public async Task<FlightDTO> CreateFlight(Flight flight) => await _flightsService.CreateFlight(flight);
 
         [HttpPut("{rab}/{schedule}")]
         public IActionResult UpdateFlight(string rab, DateTime schedule, bool status)
