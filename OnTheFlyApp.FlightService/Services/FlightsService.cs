@@ -73,6 +73,7 @@ namespace OnTheFlyApp.FlightService.Services
 
             try
             {
+                //Busca informaçoes do aeroporto
                 HttpResponseMessage airportResponse = await FlightsService.flightClient.GetAsync("https://localhost:44366/Airport/" + flight.Arrival.Iata);
                 airportResponse.EnsureSuccessStatusCode();
                 string airportJson = await airportResponse.Content.ReadAsStringAsync();
