@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OnTheFly.Models;
+using OnTheFly.Models.Dto;
 using OnTheFlyApp.AirCraftService.Service;
 
 namespace OnTheFlyApp.AirCraftService.Controllers
@@ -17,7 +18,7 @@ namespace OnTheFlyApp.AirCraftService.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<AirCraft>> Get() => _aircraftService.GetAll();
+        public ActionResult<List<AirCraftDTO>> Get() => _aircraftService.GetAll();
 
         [HttpGet("{rab}",Name = "GetByRab")]
         public ActionResult<AirCraft> GetByRab(string rab)
