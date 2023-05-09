@@ -46,8 +46,7 @@ namespace OnTheFly.Models
             this.Name = passenger.Name;
             this.Gender = passenger.Gender.ToUpper();
             this.Phone = passenger.Phone;
-            this.DtBirth = passenger.DtBirth;
-            this.DtRegister = passenger.DtRegister;
+            //this.DtRegister = passenger.DtRegister;
             this.Status = passenger.Status;
             this.Address = passenger.Address;
         }
@@ -59,8 +58,7 @@ namespace OnTheFly.Models
             this.Name = passenger.Name;
             this.Gender = passenger.Gender.ToUpper();
             this.Phone = passenger.Phone;
-            this.DtBirth = passenger.DtBirth;
-            this.DtRegister = passenger.DtRegister;
+            this.DtRegister = DateTime.Now;
             this.Status = passenger.Status;
             this.Address = new() { ZipCode = passenger.Address.ZipCode, Number = passenger.Address.Number };
         }

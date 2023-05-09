@@ -25,9 +25,9 @@ namespace OnTheFly.Models.Dto
         public string? Phone { get; set; }
 
 
-        public DateTime DtBirth { get; set; }
+        public string DtBirth { get; set; }
 
-        public DateTime DtRegister { get; set; }
+        public string DtRegister { get; set; }
         public bool? Status { get; set; }
 
 
@@ -41,8 +41,8 @@ namespace OnTheFly.Models.Dto
             this.Name = passenger.Name;
             this.Gender = passenger.Gender.ToUpper();
             this.Phone = passenger.Phone;
-            this.DtBirth = passenger.DtBirth;
-            this.DtRegister = passenger.DtRegister;
+            this.DtBirth = passenger.DtBirth.ToShortDateString();
+            this.DtRegister = passenger.DtRegister.ToString("dd/MM/yyyy HH:mm:ss");
             this.Status = passenger.Status;
             this.Address = new()
             {
