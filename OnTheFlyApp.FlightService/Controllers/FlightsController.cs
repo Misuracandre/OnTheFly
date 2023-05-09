@@ -24,8 +24,12 @@ namespace OnTheFlyApp.FlightService.Controllers
         [HttpGet("activated", Name = "GetActivated")]
         public List<Flight> GetDisabled() => _flightsService.GetDisabled();
 
-        [HttpGet("AirCraftAndSchedule", Name = "GetByAirCraftAndSchedule")]
-        public ActionResult<FlightDTO> GetFlightByRabAndSchedule(string rab, DateTime schedule) => _flightsService.GetFlightByRabAndSchedule(rab, schedule);
+        [HttpGet("{rab}/{schedule}", Name = "GetByAirCraftAndSchedule")]
+        public async Task<ActionResult<FlightDTO>> GetFlightByRabAndSchedule(string rab, DateTime schedule) => await _flightsService.GetFlightByRabAndSchedule(rab, schedule);
+
+
+        //[HttpGet("AirCraftAndSchedule", Name = "GetByAirCraftAndSchedule")]
+        //public async Task<ActionResult<FlightDTO>> GetFlightByRabAndSchedule(string rab, DateTime schedule) => await _flightsService.GetFlightByRabAndSchedule(rab, schedule);
 
         [HttpPost]
         public async Task<FlightDTO> CreateFlight(Flight flight) => await _flightsService.CreateFlight(flight);
