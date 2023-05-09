@@ -29,7 +29,7 @@ namespace OnTheFlyApp.PassengerService.Controllers
         public ActionResult<PassengerDTO> Create(PassengerInsert passenger) => _passengerService.Create(passenger);
 
         [HttpPut("{cpf:length(11)}")]
-        public ActionResult<PassengerDTO> Update(string cpf, bool status) => _passengerService.Update(cpf, status);
+        public ActionResult<PassengerDTO> Update(string cpf, PassengerDTO passenger) => _passengerService.Update(cpf, passenger);
 
         [HttpDelete("{cpf:length(11)}")]
         public async Task<ActionResult> Delete(string cpf) => await _passengerService.Delete(cpf);

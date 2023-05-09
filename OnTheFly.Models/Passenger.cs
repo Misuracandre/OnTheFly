@@ -35,7 +35,7 @@ namespace OnTheFly.Models
         public DateTime DtRegister { get; set; }
         public bool? Status { get; set; }
 
-        public Address Address { get; set; }
+        public AddressDTO Address { get; set; }
 
         public Passenger() { }
 
@@ -50,7 +50,6 @@ namespace OnTheFly.Models
             this.DtRegister = passenger.DtRegister;
             this.Status = passenger.Status;
             this.Address = passenger.Address;
-            this.Address.ZipCode = passenger.Address.ZipCode;
         }
 
         public Passenger(PassengerInsert passenger)
@@ -63,6 +62,7 @@ namespace OnTheFly.Models
             this.DtBirth = passenger.DtBirth;
             this.DtRegister = passenger.DtRegister;
             this.Status = passenger.Status;
+            this.Address = new() { ZipCode = passenger.Address.ZipCode, Number = passenger.Address.Number };
         }
     }
 }

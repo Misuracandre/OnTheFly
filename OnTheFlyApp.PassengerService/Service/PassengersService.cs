@@ -55,60 +55,68 @@ namespace OnTheFlyApp.PassengerService.Service
 
         public ActionResult<PassengerDTO> Create(PassengerInsert passenger)
         {
-            passenger.Cpf = _util.JustDigits(passenger.Cpf);
-            if (GetByCpf(passenger.Cpf).Value != null)
-                return new ContentResult() { Content = "Passageiro já cadastrado", StatusCode = StatusCodes.Status400BadRequest };
+            Passenger passengerComplete = new(passenger);
 
-            if (!_util.VerifyCpf(passenger.Cpf))
+            passengerComplete.Cpf = _util.JustDigits(passengerComplete.Cpf);
+            var passengerAlreadyExists = GetByCpf(passengerComplete.Cpf).Value;
+            if (passengerAlreadyExists != null)
+                return passengerAlreadyExists;
+
+            if (!_util.VerifyCpf(passengerComplete.Cpf))
                 return new ContentResult() { Content = "CPF inválido", StatusCode = StatusCodes.Status400BadRequest };
 
-            if (passenger.Gender.ToUpper() != "M" && passenger.Gender.ToUpper() != "F")
+            if (passengerComplete.Gender.ToUpper() != "M" && passenger.Gender.ToUpper() != "F")
                 return new ContentResult() { Content = "Gênero não definido", StatusCode = StatusCodes.Status400BadRequest };
-            
-            passenger.Phone = _util.JustDigits(passenger.Phone);
-            if (passenger.Phone.Length < 8)
+
+            passengerComplete.Phone = _util.JustDigits(passengerComplete.Phone);
+            if (passengerComplete.Phone.Length < 8)
                 return new ContentResult() { Content = "Telefone requer no minimo 8 digitos", StatusCode = StatusCodes.Status400BadRequest };
 
-            var ad = CreateAddres(passenger.Address).Value;
-            if (ad == null)
+            passengerComplete.Address = CreateAddres(passengerComplete.Address).Value;
+            if (passengerComplete.Address == null)
                 return new ContentResult() { Content = "Localidade não encontrada", StatusCode = StatusCodes.Status400BadRequest };
 
-            Passenger p = new(passenger);
-            p.Address = ad;
-            _passenger.InsertOne(p);
-            PassengerDTO passengerDTO = new(p);
+            _passenger.InsertOne(passengerComplete);
+            PassengerDTO passengerDTO = new(passengerComplete);
             return passengerDTO;
         }
 
-        public ActionResult<Address> CreateAddres(AddressInsert address)
+        public ActionResult<AddressDTO> CreateAddres(AddressDTO address)
         {
             address.ZipCode = _util.JustDigits(address.ZipCode);
+            Address addressAlreadyExists = _address.Find(a => a.ZipCode == address.ZipCode && a.Number == address.Number).FirstOrDefault();
 
-            var exclude = Builders<Address>.Projection.Exclude(a => a.Id);
-            Address ad = _address.Find(a => a.ZipCode == address.ZipCode && a.Number == address.Number).
-                Project<Address>(exclude).FirstOrDefault();
+            if (addressAlreadyExists != null)
+                return new AddressDTO(addressAlreadyExists);
 
-            if (ad != null)
-                return ad;
-
-            ad = _util.GetAddress(address.ZipCode).Result;
-            if (ad == null)
+            addressAlreadyExists = _util.GetAddress(address.ZipCode).Result;
+            if (addressAlreadyExists == null)
                 return new ContentResult() { Content = "Localidade não encontrada", StatusCode = StatusCodes.Status400BadRequest };
             
-            ad.ZipCode = address.ZipCode;
-            _address.InsertOne(ad);
-            ad = new(ad);
-            return ad;
+            addressAlreadyExists.ZipCode = address.ZipCode;
+            addressAlreadyExists.Number = address.Number;
+
+            _address.InsertOne(addressAlreadyExists);
+
+            //AddressDTO returnAddress = new(addressAlreadyExists);
+            //return returnAddress;
+            return new AddressDTO(addressAlreadyExists);
         }
 
-        public ActionResult<PassengerDTO> Update(string cpf, bool status)
+        public ActionResult<PassengerDTO> Update(string cpf, PassengerDTO passenger)
         {
             var options = new FindOneAndUpdateOptions<Passenger, Passenger> { ReturnDocument = ReturnDocument.After };
-            var update = Builders<Passenger>.Update.Set("Status", status);
-            var passenger = _passenger.FindOneAndUpdate<Passenger>(p => p.Cpf == cpf, update, options);
-            if(passenger == null)
+            var update = Builders<Passenger>.Update.Set("Name", passenger.Name).
+                                                    Set("Gender", passenger.Gender).
+                                                    Set("Gender", passenger.Gender).
+                                                    Set("Phone", passenger.Phone).
+                                                    Set("DtBirth", passenger.DtBirth).
+                                                    Set("Status", passenger.Status).
+                                                    Set("Address", passenger.Address);
+            var passengerUpdated = _passenger.FindOneAndUpdate<Passenger>(p => p.Cpf == cpf, update, options);
+            if (passengerUpdated == null)
                 return new ContentResult() { Content = "Passageiro não encontrado", StatusCode = StatusCodes.Status404NotFound };
-            return new PassengerDTO(passenger);
+            return new PassengerDTO(passengerUpdated);
         }
 
         public async Task<ActionResult> Delete(string cpf)
