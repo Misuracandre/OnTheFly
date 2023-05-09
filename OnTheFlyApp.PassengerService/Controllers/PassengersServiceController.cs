@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using OnTheFly.Models;
 using OnTheFly.Models.Dto;
 using OnTheFlyApp.PassengerService.Service;
+using Utility;
 
 namespace OnTheFlyApp.PassengerService.Controllers
 {
@@ -19,47 +20,19 @@ namespace OnTheFlyApp.PassengerService.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<PassengerDTO>> Get()
-        {
-            var p = _passengerService.GetAll();
-            if (p.Count == 0) return NotFound("Nenhum passageiro cadastrado");
-            return p;
-        }
+        public ActionResult<List<PassengerDTO>> Get() => _passengerService.GetAll();
 
         [HttpGet("{cpf:length(11)}")]
-        public ActionResult<PassengerDTO> GetByCpf(string cpf)
-        {
-            var p = _passengerService.GetByCpf(cpf);
-            if(p == null) return NotFound("Passageiro não encontrado");
-            return Ok(p);
-        }
+        public ActionResult<PassengerDTO> GetByCpf(string cpf) =>  _passengerService.GetByCpf(cpf);
 
         [HttpPost]
-        public ActionResult<PassengerDTO> Create(PassengerInsert passenger)
-        {
-            var p = _passengerService.Create(passenger);
-            if (p == null)
-                return BadRequest("Passageiro não cadastrado");
-            return Ok(p);
-        }
+        public ActionResult<PassengerDTO> Create(PassengerInsert passenger) => _passengerService.Create(passenger);
 
         [HttpPut("{cpf:length(11)}")]
-        public ActionResult<Passenger> Update(string cpf, bool status)
-        {
-            var pas = _passengerService.Update(cpf, status);
-            if (pas == null) return NotFound("Passageiro não encontrado");
-            return Ok(pas.Value);
-        }
+        public ActionResult<PassengerDTO> Update(string cpf, bool status) => _passengerService.Update(cpf, status);
 
         [HttpDelete("{cpf:length(11)}")]
-        public async Task<ActionResult> Delete(string cpf)
-        {
-            if (await _passengerService.Delete(cpf) != 1)
-                return NotFound("Passageiro não deletado");
-
-            return Ok("Passageiro deletado");
-        }
-
+        public async Task<ActionResult> Delete(string cpf) => await _passengerService.Delete(cpf);
     }
 }
 
