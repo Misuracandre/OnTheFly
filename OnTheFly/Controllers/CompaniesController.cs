@@ -11,10 +11,10 @@ namespace OnTheFlyApp.Controllers
     [ApiController]
     public class CompaniesController : ControllerBase
     {
-        private readonly CompanieServices _companyService;
+        private readonly CompanyServices _companyService;
         public CompaniesController()
         {
-            _companyService = new CompanieServices();
+            _companyService = new CompanyServices();
         }
 
         [HttpGet]

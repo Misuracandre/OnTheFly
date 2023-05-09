@@ -53,7 +53,7 @@ namespace OnTheFlyApp.CompanyService.Controllers
             if (company.Name == "string" || company.Name == string.Empty)
                 return BadRequest("Campo nome vazio");
 
-
+            //Método consumindo api busca cep
             var newAddress = _util.GetAddress(company.Address.ZipCode).Result;
 
             if (newAddress == null || company.Address.Number == 0)

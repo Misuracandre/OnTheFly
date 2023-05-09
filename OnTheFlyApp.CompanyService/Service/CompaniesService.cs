@@ -109,6 +109,7 @@ namespace OnTheFlyApp.CompanyService.Service
         public void Delete(string cnpj)
         {
             var insertDisable = _company.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync().Result;
+            _address.DeleteOne(c => c.Number == insertDisable.Address.Number && c.ZipCode == insertDisable.Address.ZipCode);
             insertDisable.Status = false;
             _companyDisabled.InsertOne(insertDisable);
             _company.DeleteOne(c => c.Cnpj == cnpj);
