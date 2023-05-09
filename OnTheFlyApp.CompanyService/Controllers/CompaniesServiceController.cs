@@ -21,7 +21,7 @@ namespace OnTheFlyApp.CompanyService.Controllers
             _companyService = companyService;
             _util = util;
         }
-
+        #region CRUD
         [HttpGet(Name = "GetAll")]
         public ActionResult<List<CompanyGetDTO>> GetAll() => _companyService.GetAll();
 
@@ -108,5 +108,6 @@ namespace OnTheFlyApp.CompanyService.Controllers
 
             return Ok("Deletado com sucesso");
         }
+        #endregion
     }
 }
