@@ -22,16 +22,16 @@ namespace OnTheFlyApp.PassengerService.Controllers
         [HttpGet]
         public ActionResult<List<PassengerDTO>> Get() => _passengerService.GetAll();
 
-        [HttpGet("{cpf:length(11)}")]
+        [HttpGet("{cpf}")]
         public ActionResult<PassengerDTO> GetByCpf(string cpf) =>  _passengerService.GetByCpf(cpf);
 
         [HttpPost]
         public ActionResult<PassengerDTO> Create(PassengerInsert passenger) => _passengerService.Create(passenger);
 
-        [HttpPut("{cpf:length(11)}")]
+        [HttpPut("{cpf}")]
         public ActionResult<PassengerDTO> Update(string cpf, PassengerDTO passenger) => _passengerService.Update(cpf, passenger);
 
-        [HttpDelete("{cpf:length(11)}")]
+        [HttpDelete("{cpf}")]
         public async Task<ActionResult> Delete(string cpf) => await _passengerService.Delete(cpf);
     }
 }
