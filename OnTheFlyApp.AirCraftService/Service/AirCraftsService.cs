@@ -9,12 +9,14 @@ namespace OnTheFlyApp.AirCraftService.Service
         private readonly IMongoCollection<AirCraft> _aircraft;
         private readonly IMongoCollection<Company> _company;
 
+        public AirCraftsService() { }
+
         public AirCraftsService(IAirCraftServiceSettings settings)
         {
             var client = new MongoClient(settings.ConnectionString);
-            var database = client.GetDatabase(settings.DatabaseName);
-            _aircraft = database.GetCollection<AirCraft>(settings.AirCraftCollectionName);
-            _company = database.GetCollection<Company>(settings.AircraftCompanyCollectionName);
+            var database = client.GetDatabase(settings.Database);
+            _aircraft = database.GetCollection<AirCraft>(settings.AircraftCollection);
+            _company = database.GetCollection<Company>(settings.AircraftCompanyCollection);
         }
 
         public List<AirCraft> GetAll()
