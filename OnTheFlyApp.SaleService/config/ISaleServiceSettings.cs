@@ -2,10 +2,12 @@
 {
     public interface ISaleServiceSettings
     {
-        string SaleCollectionName { get; set; }
-        string ReservationCollectionName { get; set; }
-        string SaleDeactivedCollectionName { get; set; }
+        string SaleCollection { get; set; }
+        string ReservationCollection { get; set; }
+        string PassengerCollection { get; set; }
+        string FlightCollection { get; set; }
+        string SaleDisabledCollection { get; set; }
         string ConnectionString { get; set; }
-        string DatabaseName { get; set; }
+        string Database { get; set; }
     }
 }

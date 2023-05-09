@@ -18,9 +18,9 @@ namespace OnTheFlyApp.Consumer
         public InsertService()
         {
             var client = new MongoClient("mongodb://localhost:27017");
-            var database = client.GetDatabase("dbSaleMongodb");
-            _sale = database.GetCollection<Sale>("dbSaleMongodb");
-            _reservation = database.GetCollection<Sale>("dbReservationMongodb");
+            var database = client.GetDatabase("DBSales");
+            _sale = database.GetCollection<Sale>("Sales");
+            _reservation = database.GetCollection<Sale>("Reservation");
         }
         
         public Sale Insert(Sale sale)
