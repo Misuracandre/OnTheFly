@@ -17,11 +17,11 @@ internal class Program
         var taskInsertSale = Consumer(connection, "Sales");
         var taskInsertReservation = Consumer(connection, "Reservations");
 
-        await Task.WhenAny(taskInsertSale, taskInsertReservation);
-        //while (true)
-        //{
-        //    Thread.Sleep(1000);
-        //}
+        while (true)
+        {
+            await Task.WhenAny(taskInsertSale, taskInsertReservation);
+            Thread.Sleep(1000);
+        }
     }
 
     static async Task Consumer(IConnection connection, string queueName)
