@@ -10,6 +10,7 @@ using System.Text;
 using Newtonsoft.Json;
 using System.Net;
 using System.Runtime.ConstrainedExecution;
+using System.Linq;
 
 namespace OnTheFlyApp.SaleService.Services
 {
@@ -119,31 +120,67 @@ namespace OnTheFlyApp.SaleService.Services
                 throw;
             }
 
+            //Verifica se o numero de vendas nao excede a capacidade do aviao
+            if (s.Flight.Plane.Capacity <= s.Flight.Sales)
+            {
+                throw new InvalidOperationException("Capacidade do avião excedida");
+            }
+
+            //Verifica se o mesmo CPF nao aparece na lista de passageiros
+            var passengerCpfs = new List<string>();
+            foreach (var passenger in s.Passengers)
+            {
+                if (passengerCpfs.Contains(passenger.Cpf))
+                {
+                    throw new InvalidOperationException("O mesmo CPF não pode aparecer na lista de passageiros");
+                }
+                passengerCpfs.Add(passenger.Cpf);
+            }
+
+            //Verificar se o passageiro nao esta restrito
+            if (s.Passengers.Any(p => p.Status.HasValue && p.Status.Value))
+            {
+                throw new InvalidOperationException("A venda foi cancelada devido a um passageiro restrito");
+            }
+
+            //Verificar se primeiro passageiro é maior de 18 anos
+            if (s.Passengers[0].DtBirth.AddYears(18) > DateTime.Now)
+            {
+                throw new InvalidOperationException("O primeiro passageiro deve ser maior de 18 anos");
+            }
 
             if (s.Reserved)
             {
                 if (!PostMQMessage(s, true)) return null;
 
-                while (s == null)
-                {
-                    s = _reservation.Find(s => s.Flight.Schedule == s.Flight.Schedule &&
+                //while (s == null)
+                //{
+                //    s = _reservation.Find(s => s.Flight.Schedule == s.Flight.Schedule &&
+                //                           s.Flight.Plane.Rab == s.Flight.Plane.Rab &&
+                //                           s.Passengers[0].Cpf == s.Passengers[0].Cpf).FirstOrDefault();
+                //    if (s == null) return null;
+                //}
+                //return s;
+
+                s =  await _reservation.Find(s => s.Flight.Schedule == s.Flight.Schedule &&
                                            s.Flight.Plane.Rab == s.Flight.Plane.Rab &&
-                                           s.Passengers[0].Cpf == s.Passengers[0].Cpf).FirstOrDefault();
-                    if (s == null) return null;
-                }
-                return s;
+                                           s.Passengers[0].Cpf == s.Passengers[0].Cpf).FirstOrDefaultAsync();
             }
             else
             {
-                if (!PostMQMessage(s, false)) return null;
-                while (s == null)
-                {
-                    s = _sale.Find(s => s.Flight.Schedule == s.Flight.Schedule &&
-                                       s.Flight.Plane.Rab == s.Flight.Plane.Rab &&
-                                       s.Passengers[0].Cpf == s.Passengers[0].Cpf).FirstOrDefault();
-                    if (s == null) return null;
-                }
-                return s;
+                //if (!PostMQMessage(s, false)) return null;
+                //while (s == null)
+                //{
+                //    s = _sale.Find(s => s.Flight.Schedule == s.Flight.Schedule &&
+                //                       s.Flight.Plane.Rab == s.Flight.Plane.Rab &&
+                //                       s.Passengers[0].Cpf == s.Passengers[0].Cpf).FirstOrDefault();
+                //    if (s == null) return null;
+                //}
+                //return s;
+
+                s = await _sale.Find(s => s.Flight.Schedule == s.Flight.Schedule &&
+                                           s.Flight.Plane.Rab == s.Flight.Plane.Rab &&
+                                           s.Passengers[0].Cpf == s.Passengers[0].Cpf).FirstOrDefaultAsync();
             }
 
             //_sale.InsertOne(s);
