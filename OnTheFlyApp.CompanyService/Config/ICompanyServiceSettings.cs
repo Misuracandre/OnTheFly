@@ -2,9 +2,9 @@
 {
     public interface ICompanyServiceSettings
     {
-        string CompanyCollectionName { get; set; }
-        string CompanyDeactivatedCollectionName { get; set; }
-        string CompanyAddressCollectionName { get; set; }
+        string CompanyCollection { get; set; }
+        string CompanyDisabledCollection { get; set; }
+        string CompanyAddressCollection { get; set; }
         string ConnectionString { get; set; }
         string DatabaseName { get; set; }
     }

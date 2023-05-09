@@ -1,79 +1,150 @@
-﻿using System;
-using System.Net;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
+using Newtonsoft.Json;
 using OnTheFly.Models;
+using OnTheFly.Models.Dto;
 using OnTheFlyApp.FlightService.Config;
+using static System.Net.WebRequestMethods;
 
 namespace OnTheFlyApp.FlightService.Services
 {
     public class FlightsService
     {
         private readonly IMongoCollection<Flight> _flight;
-        private readonly IMongoCollection<Flight> _flightDeactivated;
+        private readonly IMongoCollection<Flight> _disabled;
         private readonly IMongoCollection<AirCraft> _airCraft;
         private readonly IMongoCollection<Airport> _airport;
+
+        //AirportApiUrl = "https://localhost:44366/Airport/";
+        //CompanyApiUrl = "https://localhost:7219/api/CompaniesService/";
+
+        static readonly HttpClient flightClient = new HttpClient();
 
         public FlightsService(IFlightServiceSettings settings)
         {
             var client = new MongoClient(settings.ConnectionString);
 
-            var database = client.GetDatabase(settings.DatabaseName);
+            var database = client.GetDatabase(settings.Database);
 
-            _flight = database.GetCollection<Flight>(settings.FlightCollectionName);
-            _flightDeactivated = database.GetCollection<Flight>(settings.FlightDeactivatedCollectionName);
-            _airCraft = database.GetCollection<AirCraft>(settings.FlightAirCraftCollectionName);
-            _airport = database.GetCollection<Airport>(settings.FlightAirportCollectionName);
+            _flight = database.GetCollection<Flight>(settings.FlightCollection);
+            _disabled = database.GetCollection<Flight>(settings.DisabledCollection);
+            _airCraft = database.GetCollection<AirCraft>(settings.AirCraftCollection);
+            _airport = database.GetCollection<Airport>(settings.AirportCollection);
         }
 
-        public List<Flight> GetAll()
+        public List<FlightDTO> GetAll()
         {
             List<Flight> flights = new();
-            flights = _flight.Find<Flight>(f => true).ToList();
-            flights.AddRange(_flightDeactivated.Find(fd => true).ToList());
 
-            return flights;
+            flights = _flight.Find<Flight>(f => true).ToList();
+
+            List<FlightDTO> flightsDTO = new();
+            foreach (var flight in flights)
+            {
+                FlightDTO flightDTO = new(flight);
+                flightsDTO.Add(flightDTO);
+            }
+
+
+            return flightsDTO;
         }
 
-        public List<Flight> GetActivated() => _flight.Find(p => true).ToList();
-        //public List<Flight> GetDeactivated() => _flight.Find(p => false).ToList();
+        public List<Flight> GetDisabled() => _flight.Find(p => false).ToList();
 
-        public Flight GetByAirCraftAndDeparture(string rab, DateTime departure)
+        public FlightDTO GetFlightByRabAndSchedule(string rab, DateTime Schedule)
         {
-            var flight = _flight.Find(f => f.Departure == departure && f.Plane.Rab == rab).FirstOrDefault();
+            var flight = _flight.Find(f => f.Schedule == Schedule && f.Plane.Rab == rab).FirstOrDefault();
 
             if (flight == null)
             {
-                throw new ArgumentException("Flight not found for the given aircraft and departure."); ;
+                throw new ArgumentException("Voo não encontrado para a aeronave e partida informados.");
             }
-            return flight;
+            return new FlightDTO(flight);
         }
 
-        public Flight CreateFlight(Flight flight)
+        public async Task<FlightDTO> CreateFlight(Flight flight)
         {
+            if (flight == null)
+            {
+                throw new ArgumentNullException(nameof(flight), "O voo não pode ser nulo.");
+            }
+
+            Airport airport = new();
+
+            try
+            {
+                HttpResponseMessage airportResponse = await FlightsService.flightClient.GetAsync("https://localhost:44366/Airport/" + flight.Arrival.Iata);
+                airportResponse.EnsureSuccessStatusCode();
+                string airportJson = await airportResponse.Content.ReadAsStringAsync();
+                airport = JsonConvert.DeserializeObject<Airport>(airportJson);
+            }
+            catch (HttpRequestException e)
+            {
+                throw;
+            }
+
+            //Verifica se o voo é nacional
+            if (airport.Country_id != "BR")
+            {
+                throw new ArgumentException("O destino do voo não é um aeroporto nacional.");
+            }
+
+            AirCraft airCraft = new();
+
+            try
+            {
+                //Busca informaçoes da companhia aérea              
+                HttpResponseMessage airCraftResponse = await FlightsService.flightClient.GetAsync("https://localhost:7117/api/AirCraftsService/" + flight.Plane.Rab);
+                airCraftResponse.EnsureSuccessStatusCode();
+                string airCraftJson = await airCraftResponse.Content.ReadAsStringAsync();
+                airCraft = JsonConvert.DeserializeObject<AirCraft>(airCraftJson);
+            }
+            catch (HttpRequestException e)
+            {
+                throw;
+            }
+
+
+            //Verifica se a companhia aérea está restrita
+            if (airCraft.Company.Status != true)
+            {
+                throw new ArgumentException("A companhia aérea não está autorizada para voo.");
+            }
+
             _flight.InsertOne(flight);
 
-            return flight;
+            return new FlightDTO(flight);
         }
 
-        public Flight UpdateFlight(string rab, DateTime departure, bool status)
+        public ActionResult<FlightDTO> UpdateFlight(string rab, DateTime Schedule, bool status)
         {
-            var filter = Builders<Flight>.Filter.Eq(r => r.Plane.Rab, rab) &
-                Builders<Flight>.Filter.Eq("Departure", departure);
+            var filter = Builders<Flight>.Filter.Eq(f => f.Plane.Rab, rab) &
+                Builders<Flight>.Filter.Eq("Schedule", Schedule);
 
             var options = new FindOneAndUpdateOptions<Flight, Flight> { ReturnDocument = ReturnDocument.After };
+
             var update = Builders<Flight>.Update.Set("Status", status);
 
-            var flight = _flight.FindOneAndUpdate<Flight>(filter, update, options);
+            var flightUpdated = _flight.FindOneAndUpdate<Flight>(filter, update, options);
 
-            return flight;
+            return new FlightDTO(flightUpdated);
         }
 
-        public void DeleteFlight(string rab, DateTime departure)
+        public async Task DeleteFlight(string rab, DateTime schedule)
         {
-            var filter = Builders<Flight>.Filter.Where(f => f.Plane.Rab == rab && f.Departure == departure);
+            var filter = Builders<Flight>.Filter.Where(f => f.Plane.Rab == rab && f.Schedule == schedule);
+            var flightToDelete = await _flight.Find(filter).FirstOrDefaultAsync();
 
-            _flight.DeleteOne(filter);
+            if (flightToDelete == null)
+            {
+                throw new ArgumentException("Voo não encontrado.");
+            }
+
+            flightToDelete.Status = false;
+
+            await _disabled.InsertOneAsync(flightToDelete);
+
+            await _flight.DeleteOneAsync(filter);
         }
     }
 }
