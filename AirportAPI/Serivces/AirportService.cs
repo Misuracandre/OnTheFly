@@ -27,6 +27,7 @@ namespace AirportAPI.Serivces
 
         public List<Airport> GetByState(string state) =>
             _airports.Find<Airport>(airport => airport.state == state).ToList();
+
         public List<Airport> GetByCityCode(string city_code) =>
             _airports.Find<Airport>(airport => airport.city_code == city_code).ToList();
 
@@ -34,7 +35,6 @@ namespace AirportAPI.Serivces
             _airports.Find<Airport>(airport => airport.city == city).ToList();
 
         public List<Airport> GetByCountry(string country_id) =>
-            _airports.Find<Airport>(airport => airport.country_id == country_id).ToList();
-            
+            _airports.Find<Airport>(airport => airport.country_id == country_id).ToList();       
     }
 }

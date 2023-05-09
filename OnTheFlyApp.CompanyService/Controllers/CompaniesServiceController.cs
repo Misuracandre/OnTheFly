@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using System.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

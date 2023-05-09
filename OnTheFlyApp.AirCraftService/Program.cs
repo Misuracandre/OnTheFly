@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using OnTheFlyApp.AirCraftService.config;
 using OnTheFlyApp.AirCraftService.Service;
+using Utility;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.Configure<AirCraftServiceSettings>(builder.Configuration.GetSection("AirCraftServiceSettings"));
 builder.Services.AddSingleton<IAirCraftServiceSettings>(s => s.GetRequiredService<IOptions<AirCraftServiceSettings>>().Value);
 builder.Services.AddSingleton<AirCraftsService>();
+builder.Services.AddSingleton<Util>();
 
 var app = builder.Build();
 
