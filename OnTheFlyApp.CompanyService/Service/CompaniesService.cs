@@ -24,35 +24,31 @@ namespace OnTheFlyApp.CompanyService.Service
             _address = database.GetCollection<Address>(settings.CompanyAddressCollection);
         }
 
-        public List<CompanyDTO> GetAll()
+        public List<CompanyGetDTO> GetAll()
         {
             List<Company> companieslst = new();
             companieslst = _company.Find(c => true).ToList();
 
-            List<CompanyDTO> lstReturn = new();
-            foreach (var company in companieslst) { CompanyDTO companyDTO = new(); lstReturn.Add(companyDTO = new(company)); }
+            List<CompanyGetDTO> lstReturn = new();
+            foreach (var company in companieslst) { CompanyGetDTO companyDTO = new(); lstReturn.Add(companyDTO = new(company)); }
 
             return lstReturn;
         }
 
-        public List<CompanyDTO> GetDisable()
+        public List<CompanyGetDTO> GetDisable()
         {
             List<Company> lstDisable = _companyDisabled.Find(c => true).ToList();
             if (lstDisable == null) return null;
 
-            List<CompanyDTO> lstReturn = new();
-            foreach (var company in lstDisable)
-            {
-                CompanyDTO companyDTO = new();
-                lstReturn.Add(companyDTO = new(company));
-            }
+            List<CompanyGetDTO> lstReturn = new();
+            foreach (var company in lstDisable) { CompanyGetDTO companyDTO = new(); lstReturn.Add(companyDTO = new(company)); }
 
             return lstReturn;
         }
 
-        public CompanyDTO GetByCompany(string cnpj)
+        public CompanyGetDTO GetByCompany(string cnpj)
         {
-            CompanyDTO companyReturn = new();
+            CompanyGetDTO companyReturn = new();
 
             var company = _company.Find<Company>(c => c.Cnpj == cnpj).FirstOrDefault();
             if (company == null) { company = _companyDisabled.Find<Company>(c => c.Cnpj == cnpj).FirstOrDefault(); }
@@ -74,13 +70,13 @@ namespace OnTheFlyApp.CompanyService.Service
             return company;
         }
 
-        public async Task<CompanyDTO> Update(string cnpj, bool status)
+        public async Task<CompanyGetDTO> Update(string cnpj, bool status)
         {
             if (status == true)
             {
                 var company = _companyDisabled.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync().Result;
                 company.Status = status;
-                CompanyDTO companyTrue = new(company);
+                CompanyGetDTO companyTrue = new(company);
                 _companyDisabled.DeleteOne(c => c.Cnpj == cnpj);
                 _company.InsertOne(company);
                 HttpResponseMessage responseAirCraft = await CompaniesService.companyClient.GetAsync(endpointAirCraft + cnpj);
@@ -96,7 +92,7 @@ namespace OnTheFlyApp.CompanyService.Service
                 insertDisabled.Status = status;
                 await _companyDisabled.InsertOneAsync(insertDisabled);
 
-                CompanyDTO companyFalse = new(insertDisabled);
+                CompanyGetDTO companyFalse = new(insertDisabled);
 
                 return companyFalse;
             }
@@ -108,11 +104,10 @@ namespace OnTheFlyApp.CompanyService.Service
 
         public void Delete(string cnpj)
         {
-            var insertDisable = _company.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync().Result;
+            var insertDisable = _companyDisabled.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync().Result;
             _address.DeleteOne(c => c.Number == insertDisable.Address.Number && c.ZipCode == insertDisable.Address.ZipCode);
             insertDisable.Status = false;
-            _companyDisabled.InsertOne(insertDisable);
-            _company.DeleteOne(c => c.Cnpj == cnpj);
+            _companyDisabled.DeleteOne(c => c.Cnpj == cnpj);
         }
     }
 }

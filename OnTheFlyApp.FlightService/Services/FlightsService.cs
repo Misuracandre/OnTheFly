@@ -51,9 +51,9 @@ namespace OnTheFlyApp.FlightService.Services
 
         public List<Flight> GetDisabled() => _flight.Find(p => false).ToList();
 
-        public FlightDTO GetFlightByRabAndSchedule(string rab, DateTime Schedule)
+        public async Task<FlightDTO> GetFlightByRabAndSchedule(string rab, DateTime Schedule)
         {
-            var flight = _flight.Find(f => f.Schedule == Schedule && f.Plane.Rab == rab).FirstOrDefault();
+            var flight = await _flight.Find(f => f.Schedule == Schedule && f.Plane.Rab == rab).FirstOrDefaultAsync();
 
             if (flight == null)
             {
@@ -73,6 +73,7 @@ namespace OnTheFlyApp.FlightService.Services
 
             try
             {
+                //Busca informaçoes do aeroporto
                 HttpResponseMessage airportResponse = await FlightsService.flightClient.GetAsync("https://localhost:44366/Airport/" + flight.Arrival.Iata);
                 airportResponse.EnsureSuccessStatusCode();
                 string airportJson = await airportResponse.Content.ReadAsStringAsync();
@@ -94,7 +95,7 @@ namespace OnTheFlyApp.FlightService.Services
             try
             {
                 //Busca informaçoes da companhia aérea              
-                HttpResponseMessage airCraftResponse = await FlightsService.flightClient.GetAsync("https://localhost:7117/api/AirCraftsService/" + flight.Plane.Rab);
+                HttpResponseMessage airCraftResponse = await FlightsService.flightClient.GetAsync("https://localhost:5002/api/AirCraftsService/" + flight.Plane.Rab);
                 airCraftResponse.EnsureSuccessStatusCode();
                 string airCraftJson = await airCraftResponse.Content.ReadAsStringAsync();
                 airCraft = JsonConvert.DeserializeObject<AirCraft>(airCraftJson);
