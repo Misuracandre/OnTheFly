@@ -186,13 +186,6 @@ namespace OnTheFlyApp.SaleService.Services
                 //                           s.Passengers[0].Cpf == s.Passengers[0].Cpf).FirstOrDefaultAsync();
                 return new ContentResult() { Content = "Venda inserida na fila", StatusCode = StatusCodes.Status200OK };
             }
-
-
-            _sale.InsertOne(s);
-            //return s;
-
-            //_sale.InsertOne(s);
-            return new ContentResult() { Content = "Venda inserida na fila", StatusCode = StatusCodes.Status200OK };
         }
     }
 }
