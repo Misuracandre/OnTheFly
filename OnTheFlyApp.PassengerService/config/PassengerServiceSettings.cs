@@ -2,10 +2,10 @@
 {
     public class PassengerServiceSettings : IPassengerServiceSettings
     {
-        public string PassengerCollectionName { get; set; }
-        public string PassengerDeactivatedCollectionName { get; set; }
-        public string PassengerAddressCollectionName { get; set; }
+        public string PassengerCollection { get; set; }
+        public string PassengerDisabledCollection { get; set; }
+        public string PassengerAddressCollection { get; set; }
         public string ConnectionString { get; set; }
-        public string DatabaseName { get; set; }
+        public string Database { get; set; }
     }
 }

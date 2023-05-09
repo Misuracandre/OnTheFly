@@ -2,9 +2,10 @@
 {
     public class AirCraftServiceSettings : IAirCraftServiceSettings
     {
-        public string AirCraftCollectionName { get; set; }
-        public string AircraftCompanyCollectionName { get; set; }
+        public string AircraftCollection { get; set; }
+        public string AircraftCompanyCollection { get; set; }
+        public string AircraftDisabledCollection { get; set; }
         public string ConnectionString { get; set; }
-        public string DatabaseName { get; set; }
+        public string Database { get; set; }
     }
 }

@@ -2,11 +2,11 @@
 {
     public class FlightServiceSettings : IFlightServiceSettings
     {
-        public string FlightCollectionName { get; set; }
-        public string FlightDeactivatedCollectionName { get; set; }
-        public string FlightAirportCollectionName { get; set; }
-        public string FlightAirCraftCollectionName { get; set; }
+        public string FlightCollection { get; set; }
+        public string DisabledCollection { get; set; }
+        public string AirportCollection { get; set; }
+        public string AirCraftCollection { get; set; }
         public string ConnectionString { get; set; }
-        public string DatabaseName { get; set; }
+        public string Database { get; set; }
     }
 }
