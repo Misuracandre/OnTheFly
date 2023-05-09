@@ -1,5 +1,6 @@
 ﻿using MongoDB.Driver;
 using OnTheFly.Models;
+using OnTheFly.Models.Dto;
 using OnTheFlyApp.AirCraftService.config;
 
 namespace OnTheFlyApp.AirCraftService.Service
@@ -7,7 +8,9 @@ namespace OnTheFlyApp.AirCraftService.Service
     public class AirCraftsService
     {
         private readonly IMongoCollection<AirCraft> _aircraft;
+        private readonly IMongoCollection<AirCraft> _aircraftDisabled;
         private readonly IMongoCollection<Company> _company;
+        static readonly HttpClient aircraftClient = new HttpClient();
 
         public AirCraftsService() { }
 
@@ -16,15 +19,30 @@ namespace OnTheFlyApp.AirCraftService.Service
             var client = new MongoClient(settings.ConnectionString);
             var database = client.GetDatabase(settings.Database);
             _aircraft = database.GetCollection<AirCraft>(settings.AircraftCollection);
+            _aircraftDisabled = database.GetCollection<AirCraft>(settings.AircraftDisabledCollection);
             _company = database.GetCollection<Company>(settings.AircraftCompanyCollection);
         }
 
-        public List<AirCraft> GetAll()
+        public List<AirCraftDTO> GetAll()
         {
-            List<AirCraft> aircrafts = new();
-            aircrafts = _aircraft.Find<AirCraft>(a => true).ToList();
+            List<AirCraft> aircraftslst = new();
+            aircraftslst = _aircraft.Find(a => true).ToList();
 
-            return aircrafts;
+            List<AirCraftDTO> lstReturn = new();
+            foreach (var aircraft in aircraftslst) { AirCraftDTO aircraftDTO = new(); lstReturn.Add(aircraftDTO = new(aircraft)); }
+
+            return lstReturn;
+        }
+
+        public List<AirCraftDTO> GetDisable()
+        {
+            List<AirCraft> lstDisable = _aircraftDisabled.Find(a => true).ToList();
+            if (lstDisable == null) return null;
+
+            List<AirCraftDTO> lstReturn = new();
+            foreach (var aircraft in lstDisable) { AirCraftDTO aircraftDTO = new(); lstReturn.Add(aircraftDTO = new(aircraft)); }
+
+            return lstReturn;
         }
 
         public AirCraft GetByRab(string rab) => _aircraft.Find(a => a.Rab == rab).FirstOrDefault();

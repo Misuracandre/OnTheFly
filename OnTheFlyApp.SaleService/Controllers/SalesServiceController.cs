@@ -34,14 +34,8 @@ namespace OnTheFlyApp.SaleService.Controllers
         }
 
         [HttpPost]
-        public ActionResult<Sale> Create(SaleDTO sale)
-        {
-            var s = _saleService.Create(sale);
-            if (s == null)
-                return BadRequest("Venda não cadastrada");
-            return Ok(s);
-            return new Sale();
-        }
+        public async Task<ActionResult> Create(SaleDTO sale) => await _saleService.Create(sale);
+
 
         [HttpPut("{rab}/{schedule}/{cpf}")]
         public ActionResult<SaleDTO> Update(string rab, DateTime schedule, string cpf, bool status)

@@ -21,7 +21,7 @@ namespace OnTheFly.Models
         public string? Complement { get; set; }
 
         [JsonProperty("localidade")]
-        public string City { get; set; }
+        public string? City { get; set; }
 
         [JsonProperty("uf")]
         public string State { get; set; }
