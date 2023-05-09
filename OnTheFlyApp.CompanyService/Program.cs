@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using OnTheFlyApp.CompanyService.Config;
 using OnTheFlyApp.CompanyService.Service;
+using Utility;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.Configure<CompanyServiceSettings>(builder.Configuration.GetSection("CompanyServiceSettings"));
 builder.Services.AddSingleton<ICompanyServiceSettings>(s => s.GetRequiredService<IOptions<CompanyServiceSettings>>().Value);
 builder.Services.AddSingleton<CompaniesService>();
+builder.Services.AddSingleton<Util>();
 
 var app = builder.Build();
 
