@@ -33,6 +33,12 @@ namespace OnTheFlyApp.PassengerService.Controllers
 
         [HttpDelete("{cpf}")]
         public async Task<ActionResult> Delete(string cpf) => await _passengerService.Delete(cpf);
+
+        [HttpPatch("disable/{cpf}", Name = "disablePassenger")]
+        public async Task<ActionResult> Disable(string cpf) => await _passengerService.Disable(cpf);
+
+        [HttpPatch("restrict/{cpf}", Name = "restrictPassenger")]
+        public async Task<ActionResult> Restrict(string cpf) => await _passengerService.Restrict(cpf);
     }
 }
 
