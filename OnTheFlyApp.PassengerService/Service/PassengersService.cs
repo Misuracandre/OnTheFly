@@ -103,14 +103,20 @@ namespace OnTheFlyApp.PassengerService.Service
             return new AddressDTO(addressAlreadyExists);
         }
 
-        public ActionResult<PassengerDTO> Update(string cpf, bool status)
+        public ActionResult<PassengerDTO> Update(string cpf, PassengerDTO passenger)
         {
             var options = new FindOneAndUpdateOptions<Passenger, Passenger> { ReturnDocument = ReturnDocument.After };
-            var update = Builders<Passenger>.Update.Set("Status", status);
-            var passenger = _passenger.FindOneAndUpdate<Passenger>(p => p.Cpf == cpf, update, options);
-            if(passenger == null)
+            var update = Builders<Passenger>.Update.Set("Name", passenger.Name).
+                                                    Set("Gender", passenger.Gender).
+                                                    Set("Gender", passenger.Gender).
+                                                    Set("Phone", passenger.Phone).
+                                                    Set("DtBirth", passenger.DtBirth).
+                                                    Set("Status", passenger.Status).
+                                                    Set("Address", passenger.Address);
+            var passengerUpdated = _passenger.FindOneAndUpdate<Passenger>(p => p.Cpf == cpf, update, options);
+            if (passengerUpdated == null)
                 return new ContentResult() { Content = "Passageiro não encontrado", StatusCode = StatusCodes.Status404NotFound };
-            return new PassengerDTO(passenger);
+            return new PassengerDTO(passengerUpdated);
         }
 
         public async Task<ActionResult> Delete(string cpf)
