@@ -25,7 +25,7 @@ namespace OnTheFly.Models.Dto
             Cnpj = company.Cnpj;
             Name = company.Name;
             NameOpt = company.NameOpt;
-            DtOpen = company.DtOpen.ToString("dd/MM/yyyy"); ;
+            DtOpen = company.DtOpen.ToString("dd/MM/yyyy");
             Status = company.Status;
             Address = new AddressDTO()
             {

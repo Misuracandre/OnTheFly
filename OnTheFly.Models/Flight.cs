@@ -22,14 +22,34 @@ namespace OnTheFly.Models
 
         public Flight() { }
 
-        public Flight(FlightDTO flight)
+        public Flight(FlightDTO flightDTO)
         {
             this.Id = string.Empty;
-            this.Sales = flight.Sales;
-            this.Schedule = flight.Schedule;
-            this.Status = flight.Status;
-            this.Arrival = flight.Arrival;
-            this.Plane = new AirCraft(flight.Plane);
+            this.Sales = flightDTO.Sales;
+            this.Schedule = flightDTO.Schedule;
+            this.Status = flightDTO.Status;
+            this.Arrival = flightDTO.Arrival;
+            this.Plane = new AirCraft(flightDTO.Plane);
+        }
+
+        public Flight(FlightInsertDTO flightInsertDTO)
+        {
+            this.Id = string.Empty;
+            this.Sales = flightInsertDTO.Sales;
+            this.Schedule = flightInsertDTO.Schedule;
+            this.Status = flightInsertDTO.Status;
+            this.Arrival = flightInsertDTO.Arrival;
+            this.Plane = new AirCraft(flightInsertDTO.Plane);
+        }
+
+        public Flight(FlightGetDTO flightGetDTO)
+        {
+            this.Id = string.Empty;
+            this.Sales = flightGetDTO.Sales;
+            this.Schedule = flightGetDTO.Schedule;
+            this.Status = flightGetDTO.Status;
+            this.Arrival = flightGetDTO.Arrival;
+            this.Plane = new AirCraft(flightGetDTO.Plane);
         }
     }
 }
