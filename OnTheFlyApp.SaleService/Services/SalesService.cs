@@ -145,7 +145,7 @@ namespace OnTheFlyApp.SaleService.Services
             }
 
             //Verificar se primeiro passageiro é maior de 18 anos
-            DateTime i = s.Passengers[0].DtBirth.AddYears(18);
+            DateTime i = DateTime.Parse(s.Passengers[0].DtBirth).AddYears(18);
             if (i > DateTime.Now)
             {
                 throw new InvalidOperationException("O primeiro passageiro deve ser maior de 18 anos");

@@ -47,9 +47,13 @@ namespace OnTheFlyApp.PassengerService.Service
 
         public ActionResult<PassengerDTO> GetByCpf(string cpf)
         {
+            cpf = _util.JustDigits(cpf);
+            if (!_util.VerifyCpf(cpf))
+                return new ContentResult() { Content = "CPF inválido", StatusCode = StatusCodes.Status400BadRequest };
+
             Passenger p = _passenger.Find(p => p.Cpf == cpf).FirstOrDefault();
             if (p == null) 
-                return new ContentResult() { Content = "Passageiro não encontrado", StatusCode = StatusCodes.Status400BadRequest };
+                return new ContentResult() { Content = "Passageiro não encontrado", StatusCode = StatusCodes.Status404NotFound };
             return new PassengerDTO(p);
         }
 
@@ -68,6 +72,14 @@ namespace OnTheFlyApp.PassengerService.Service
             if (passengerComplete.Gender.ToUpper() != "M" && passenger.Gender.ToUpper() != "F")
                 return new ContentResult() { Content = "Gênero não definido", StatusCode = StatusCodes.Status400BadRequest };
 
+            if (!DateTime.TryParse(passenger.DtBirth, out DateTime dBirth))
+                return new ContentResult() { Content = "Data de nascimento em formato inválido", StatusCode = StatusCodes.Status400BadRequest };
+
+            if (dBirth > DateTime.Now)
+                return new ContentResult() { Content = "Data de nascimento deve ser menor que a data atual", StatusCode = StatusCodes.Status400BadRequest };
+
+            passengerComplete.DtBirth = dBirth.AddHours(-3);
+
             passengerComplete.Phone = _util.JustDigits(passengerComplete.Phone);
             if (passengerComplete.Phone.Length < 8)
                 return new ContentResult() { Content = "Telefone requer no minimo 8 digitos", StatusCode = StatusCodes.Status400BadRequest };
@@ -77,6 +89,7 @@ namespace OnTheFlyApp.PassengerService.Service
                 return new ContentResult() { Content = "Localidade não encontrada", StatusCode = StatusCodes.Status400BadRequest };
 
             _passenger.InsertOne(passengerComplete);
+            passengerComplete.DtBirth = dBirth.AddHours(3);
             PassengerDTO passengerDTO = new(passengerComplete);
             return passengerDTO;
         }
@@ -105,6 +118,10 @@ namespace OnTheFlyApp.PassengerService.Service
 
         public ActionResult<PassengerDTO> Update(string cpf, PassengerDTO passenger)
         {
+            cpf = _util.JustDigits(cpf);
+            if (!_util.VerifyCpf(cpf))
+                return new ContentResult() { Content = "CPF inválido", StatusCode = StatusCodes.Status400BadRequest };
+
             var options = new FindOneAndUpdateOptions<Passenger, Passenger> { ReturnDocument = ReturnDocument.After };
             var update = Builders<Passenger>.Update.Set("Name", passenger.Name).
                                                     Set("Gender", passenger.Gender).
@@ -121,6 +138,10 @@ namespace OnTheFlyApp.PassengerService.Service
 
         public async Task<ActionResult> Delete(string cpf)
         {
+            cpf = _util.JustDigits(cpf);
+            if (!_util.VerifyCpf(cpf))
+                return new ContentResult() { Content = "CPF inválido", StatusCode = StatusCodes.Status400BadRequest };
+
             Passenger passenger = _passenger.Find(p => p.Cpf == cpf).FirstOrDefault();
             if (passenger == null) return new ContentResult() { Content = "Passageiro não encontrado", 
                 StatusCode = StatusCodes.Status400BadRequest };
