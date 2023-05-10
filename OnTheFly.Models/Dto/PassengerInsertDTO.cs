@@ -25,12 +25,16 @@ namespace OnTheFly.Models.Dto
         public string? Phone { get; set; }
 
 
-        public DateTime DtBirth { get; set; }
-
-        public DateTime DtRegister { get; set; }
+        public string DtBirth { get; set; }
         public bool? Status { get; set; }
 
 
         public AddressInsert Address { get; set; }
+
+        public PassengerInsert()
+        {
+            
+        }
+
     }
 }

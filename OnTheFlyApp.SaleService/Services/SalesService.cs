@@ -10,6 +10,7 @@ using System.Text;
 using Newtonsoft.Json;
 using System.Net;
 using System.Runtime.ConstrainedExecution;
+using System.Linq;
 
 namespace OnTheFlyApp.SaleService.Services
 {
@@ -53,8 +54,8 @@ namespace OnTheFlyApp.SaleService.Services
         public bool PostMQMessage([FromBody] Sale sale, bool reservation)
         {
             string queueName;
-            if (reservation) queueName = "Reservation";
-            else queueName = "sales";
+            if (reservation) queueName = "Reservations";
+            else queueName = "Sales";
 
             using (var connection = _factory.CreateConnection())
             {
@@ -83,7 +84,7 @@ namespace OnTheFlyApp.SaleService.Services
             return true;
         }
 
-        public async Task<Sale> Create(SaleDTO sale)
+        public async Task<ActionResult> Create(SaleDTO sale)
         {
             //numero de vendas nao exceda a capacidade do aviao
             //garantir que o mesmo cpf nao apareca na lista de passageiros
@@ -94,6 +95,7 @@ namespace OnTheFlyApp.SaleService.Services
             HttpClient saleClient = new HttpClient();
             try
             {
+                var dt = sale.Flight.Schedule.ToString("yyyy-MM-THH:mm:ss.FFF+00:00");
                 //HttpResponseMessage response = await saleClient.GetAsync("https://localhost:7222/api/Flights/" + sale.Flight.Plane.Rab + "/" + sale.Flight.Schedule);
                 HttpResponseMessage response = await saleClient.GetAsync("https://localhost:7222/api/Flights/AAG/2023-05-09T03%3A04%3A31.966%2B00%3A00");
                 response.EnsureSuccessStatusCode();
@@ -119,35 +121,74 @@ namespace OnTheFlyApp.SaleService.Services
                 throw;
             }
 
+            //Verifica se o numero de vendas nao excede a capacidade do aviao
+            if (s.Flight.Plane.Capacity > s.Flight.Sales)
+            {
+                throw new InvalidOperationException("Capacidade do avião excedida");
+            }
+
+            //Verifica se o mesmo CPF nao aparece na lista de passageiros
+            var passengerCpfs = new List<string>();
+            foreach (var passenger in s.Passengers)
+            {
+                if (passengerCpfs.Contains(passenger.Cpf))
+                {
+                    throw new InvalidOperationException("O mesmo CPF não pode aparecer na lista de passageiros");
+                }
+                passengerCpfs.Add(passenger.Cpf);
+            }
+
+            //Verificar se o passageiro nao esta restrito
+            if (s.Passengers.Any(p => p.Status == false))
+            {
+                throw new InvalidOperationException("A venda foi cancelada devido a um passageiro restrito");
+            }
+
+            //Verificar se primeiro passageiro é maior de 18 anos
+            DateTime i = DateTime.Parse(s.Passengers[0].DtBirth).AddYears(18);
+            if (i > DateTime.Now)
+            {
+                throw new InvalidOperationException("O primeiro passageiro deve ser maior de 18 anos");
+            }
 
             if (s.Reserved)
             {
                 if (!PostMQMessage(s, true)) return null;
 
-                while (s == null)
-                {
-                    s = _reservation.Find(s => s.Flight.Schedule == s.Flight.Schedule &&
-                                           s.Flight.Plane.Rab == s.Flight.Plane.Rab &&
-                                           s.Passengers[0].Cpf == s.Passengers[0].Cpf).FirstOrDefault();
-                    if (s == null) return null;
-                }
-                return s;
+                //while (s == null)
+                //{
+                //    s = _reservation.Find(s => s.Flight.Schedule == s.Flight.Schedule &&
+                //                           s.Flight.Plane.Rab == s.Flight.Plane.Rab &&
+                //                           s.Passengers[0].Cpf == s.Passengers[0].Cpf).FirstOrDefault();
+                //    if (s == null) return null;
+                //}
+                //return s;
+
+                //s =  await _reservation.Find(s => s.Flight.Schedule == s.Flight.Schedule &&
+                //                           s.Flight.Plane.Rab == s.Flight.Plane.Rab &&
+                //                           s.Passengers[0].Cpf == s.Passengers[0].Cpf).FirstOrDefaultAsync();
+                return new ContentResult() { Content = "Reserva inserida na fila", StatusCode = StatusCodes.Status200OK };
             }
             else
             {
                 if (!PostMQMessage(s, false)) return null;
-                while (s == null)
-                {
-                    s = _sale.Find(s => s.Flight.Schedule == s.Flight.Schedule &&
-                                       s.Flight.Plane.Rab == s.Flight.Plane.Rab &&
-                                       s.Passengers[0].Cpf == s.Passengers[0].Cpf).FirstOrDefault();
-                    if (s == null) return null;
-                }
-                return s;
+                //while (s == null)
+                //{
+                //    s = _sale.Find(s => s.Flight.Schedule == s.Flight.Schedule &&
+                //                       s.Flight.Plane.Rab == s.Flight.Plane.Rab &&
+                //                       s.Passengers[0].Cpf == s.Passengers[0].Cpf).FirstOrDefault();
+                //    if (s == null) return null;
+                //}
+                //return s;
+
+                //s = await _sale.Find(s => s.Flight.Schedule == s.Flight.Schedule &&
+                //                           s.Flight.Plane.Rab == s.Flight.Plane.Rab &&
+                //                           s.Passengers[0].Cpf == s.Passengers[0].Cpf).FirstOrDefaultAsync();
+                return new ContentResult() { Content = "Venda inserida na fila", StatusCode = StatusCodes.Status200OK };
             }
 
             //_sale.InsertOne(s);
-            return s;
+            //return new ContentResult() { Content = "Venda inserida na fila", StatusCode = StatusCodes.Status200OK }
         }
     }
 }

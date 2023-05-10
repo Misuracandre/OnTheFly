@@ -22,17 +22,23 @@ namespace OnTheFlyApp.PassengerService.Controllers
         [HttpGet]
         public ActionResult<List<PassengerDTO>> Get() => _passengerService.GetAll();
 
-        [HttpGet("{cpf:length(11)}")]
+        [HttpGet("{cpf}")]
         public ActionResult<PassengerDTO> GetByCpf(string cpf) =>  _passengerService.GetByCpf(cpf);
 
         [HttpPost]
         public ActionResult<PassengerDTO> Create(PassengerInsert passenger) => _passengerService.Create(passenger);
 
-        [HttpPut("{cpf:length(11)}")]
-        public ActionResult<PassengerDTO> Update(string cpf, bool status) => _passengerService.Update(cpf, status);
+        [HttpPut("{cpf}")]
+        public ActionResult<PassengerDTO> Update(string cpf, PassengerDTO passenger) => _passengerService.Update(cpf, passenger);
 
-        [HttpDelete("{cpf:length(11)}")]
+        [HttpDelete("{cpf}")]
         public async Task<ActionResult> Delete(string cpf) => await _passengerService.Delete(cpf);
+
+        [HttpPatch("disable/{cpf}", Name = "disablePassenger")]
+        public async Task<ActionResult> Disable(string cpf) => await _passengerService.Disable(cpf);
+
+        [HttpPatch("restrict/{cpf}", Name = "restrictPassenger")]
+        public async Task<ActionResult> Restrict(string cpf) => await _passengerService.Restrict(cpf);
     }
 }
 
