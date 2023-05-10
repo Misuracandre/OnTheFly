@@ -1,11 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MongoDB.Bson.IO;
 using MongoDB.Driver;
 using OnTheFly.Models;
 using OnTheFly.Models.Dto;
 using OnTheFlyApp.AirCraftService.config;
 using System.Net;
-using Utility;
 using Newtonsoft.Json;
 
 namespace OnTheFlyApp.AirCraftService.Service
@@ -16,7 +14,7 @@ namespace OnTheFlyApp.AirCraftService.Service
         private readonly IMongoCollection<AirCraft> _aircraftDisabled;
         private readonly IMongoCollection<Company> _company;
         static readonly HttpClient aircraftClient = new HttpClient();
-        static readonly string endCompany = "https://localhost:7219/api/CompaniesService/cnpj?cnpj=";
+        static readonly string endCompany = "https://localhost:5001/api/CompaniesService/cnpj/";
         
 
         public AirCraftsService() { }
@@ -35,13 +33,13 @@ namespace OnTheFlyApp.AirCraftService.Service
         {
             AirCraftDTO aircraftReturn = new(aircraft);
             var companyObj = new CompanyGetDTO();
+            companyObj.Address = new();
             try
             {                
-                HttpResponseMessage response = await AirCraftsService.aircraftClient.GetAsync(endCompany + aircraft.Company);
+                HttpResponseMessage response = await AirCraftsService.aircraftClient.GetAsync("https://localhost:5001/api/CompanyService/cnpj?cnpj=" + aircraft.Company);
                 response.EnsureSuccessStatusCode();
                 var companyReturn = await response.Content.ReadAsStringAsync();
-                companyObj = Newtonsoft.Json.JsonConvert.DeserializeObject<CompanyGetDTO>(companyReturn);
-               
+                companyObj = JsonConvert.DeserializeObject<CompanyGetDTO>(companyReturn);
 
             }
             catch (Exception ex)

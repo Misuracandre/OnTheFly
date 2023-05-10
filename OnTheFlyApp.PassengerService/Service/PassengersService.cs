@@ -118,6 +118,7 @@ namespace OnTheFlyApp.PassengerService.Service
             
             addressAlreadyExists.ZipCode = address.ZipCode;
             addressAlreadyExists.Number = address.Number;
+            addressAlreadyExists.Complement = address.Complement;
 
             _address.InsertOne(addressAlreadyExists);
 

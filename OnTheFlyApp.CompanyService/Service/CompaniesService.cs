@@ -68,7 +68,7 @@ namespace OnTheFlyApp.CompanyService.Service
 
             var company = _company.Find<Company>(c => c.Cnpj == cnpj).FirstOrDefault();
             var companyDisabled = _companyDisabled.Find<Company>(c => c.Cnpj == cnpj).FirstOrDefault();
-            if (companyDisabled == null && company == null) throw new Exception();
+            if (companyDisabled == null && company == null) return null;
 
             if(companyDisabled != null) { return companyReturn = new(companyDisabled); }
             else return companyReturn = new(company);
