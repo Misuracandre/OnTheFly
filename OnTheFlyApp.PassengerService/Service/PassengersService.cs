@@ -120,15 +120,13 @@ namespace OnTheFlyApp.PassengerService.Service
             if (addressAlreadyExists == null)
                 return new ContentResult() { Content = "Localidade não encontrada", StatusCode = StatusCodes.Status400BadRequest };
 
-            addressAlreadyExists.Street = addressAlreadyExists.Complement == "" ? address.Street : addressAlreadyExists.Complement;
+            addressAlreadyExists.Street = addressAlreadyExists.Street == "" ? address.Street : addressAlreadyExists.Street;
             addressAlreadyExists.Complement = address.Complement;
             addressAlreadyExists.ZipCode = address.ZipCode;
             addressAlreadyExists.Number = address.Number;
 
             _address.InsertOne(addressAlreadyExists);
 
-            //AddressDTO returnAddress = new(addressAlreadyExists);
-            //return returnAddress;
             return new AddressDTO(addressAlreadyExists);
         }
 
