@@ -22,6 +22,15 @@ namespace OnTheFly.Models.Dto
         public AddressInsert Address { get; set; }
 
         public CompanyInsertDTO() { }
-        
+        public CompanyInsertDTO(Company company)
+        {
+            Cnpj = company.Cnpj;
+            Name = company.Name;
+            NameOpt = company.NameOpt;
+            DtOpen = company.DtOpen;
+            Status = company.Status;
+            Address = new AddressInsert(company.Address);
+        }
+
     }
 }

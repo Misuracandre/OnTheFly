@@ -18,9 +18,6 @@ namespace OnTheFlyApp.FlightService.Services
         private readonly IMongoCollection<Airport> _airport;
         private readonly Util _util;
 
-        //AirportApiUrl = "https://localhost:44366/Airport/";
-        //CompanyApiUrl = "https://localhost:7219/api/CompaniesService/";
-
         static readonly HttpClient flightClient = new HttpClient();
 
         public FlightsService(IFlightServiceSettings settings, Util util)
@@ -37,35 +34,25 @@ namespace OnTheFlyApp.FlightService.Services
             _util = util;
         }
 
-        public ActionResult<List<FlightDTO>> GetAll()
+        public ActionResult<List<FlightGetDTO>> GetAll()
         {
             List<Flight> flights = _flight.Find<Flight>(f => true).ToList();
             if (flights.Count == 0)
                 return new ContentResult() { Content = "Nenhum voo encontrado", StatusCode = StatusCodes.Status400BadRequest };
 
-            List<FlightDTO> flightsDTO = new();
+            List<FlightGetDTO> flightsGetDTO = new();
             foreach (var flight in flights)
             {
-                FlightDTO flightDTO = new(flight);
-                flightsDTO.Add(flightDTO);
+                FlightGetDTO flightGetDTO = new(flight);
+                flightsGetDTO.Add(flightGetDTO);
             }
 
-
-            return flightsDTO;
+            return flightsGetDTO;
         }
-
-        //public ActionResult<List<FlightDTO>> GetDisabled()
-        //{
-        //    Flight flights = _flight.Find(f => false).ToList();
-        //    if (flights == null)
-        //        return new ContentResult() { Content = "Nenhum voo encontrado", StatusCode = StatusCodes.Status400BadRequest };
-
-        //    return new List<FlightDTO>(flights);
-        //}
 
         public ActionResult<List<Flight>> GetDeleted() => _deleted.Find(Builders<Flight>.Filter.Empty).ToList();
 
-        public async Task<ActionResult<FlightDTO>> GetFlightByRabAndSchedule(string rab, DateTime Schedule)
+        public async Task<ActionResult<FlightGetDTO>> GetFlightByRabAndSchedule(string rab, DateTime Schedule)
         {
             var filter = Builders<Flight>.Filter.And(
                 Builders<Flight>.Filter.Eq(f => f.Plane.Rab, rab),
@@ -76,11 +63,16 @@ namespace OnTheFlyApp.FlightService.Services
             if (flight == null)
                 return new ContentResult() { Content = "Voo não encontrado para a aeronave e partida informados.", StatusCode = StatusCodes.Status400BadRequest };
 
-            return new FlightDTO(flight);
+            if (!_util.VerifyRab(rab))
+                return new ContentResult() { Content = "RAB inválido.", StatusCode = StatusCodes.Status400BadRequest };
+
+            return new FlightGetDTO(flight);
         }
 
-        public async Task<ActionResult<FlightDTO>> CreateFlight(Flight flight)
+        public async Task<ActionResult<FlightDTO>> CreateFlight(FlightInsertDTO flightInsertDTO)
         {
+            Flight flight = new(flightInsertDTO);
+
             if (flight == null)
                 return new ContentResult() { Content = "O voo não pode ser nulo.", StatusCode = StatusCodes.Status400BadRequest };
 
@@ -102,8 +94,6 @@ namespace OnTheFlyApp.FlightService.Services
                 return new ContentResult() { Content = "Erro ao buscar informações do aeroporto.", StatusCode = StatusCodes.Status500InternalServerError };
             }
 
-
-            // Verifica se o voo é nacional
             if (airport.Country_id != "BR")
                 return new ContentResult() { Content = "O destino do voo não é um aeroporto nacional.", StatusCode = StatusCodes.Status400BadRequest };
 
@@ -127,7 +117,6 @@ namespace OnTheFlyApp.FlightService.Services
             }
 
 
-            // Verifica se a companhia aérea está restrita
             if (airCraft.Company.Status != true)
                 return new ContentResult() { Content = "A companhia aérea não está autorizada para voo.", StatusCode = StatusCodes.Status400BadRequest };
 
@@ -137,17 +126,17 @@ namespace OnTheFlyApp.FlightService.Services
             if (flight.Sales < 1)
                 return new ContentResult() { Content = "O número de vendas não pode ser menor do que 1.", StatusCode = StatusCodes.Status400BadRequest };
 
-            if (flight.Status == true || flight.Status == false)
+            if (flight.Status != true && flight.Status != false)
                 return new ContentResult() { Content = "O status do voo deve ser informado como 'true' ou 'false'.", StatusCode = StatusCodes.Status400BadRequest };
 
             if (flight.Arrival.Iata.Length != 3)
                 return new ContentResult() { Content = "O código IATA do aeroporto deve ter exatamente 3 caracteres.", StatusCode = StatusCodes.Status400BadRequest };
 
-
             _flight.InsertOne(flight);
+            FlightDTO flightDTO = new(flight);
 
 
-            return new FlightDTO(flight);
+            return flightDTO;
         }
 
         public async Task<ActionResult<FlightDTO>> UpdateFlight(string rab, DateTime schedule, bool status)
@@ -159,8 +148,8 @@ namespace OnTheFlyApp.FlightService.Services
             if (schedule == null)
                 return new ContentResult() { Content = "O horário do avião não pode ser nulo.", StatusCode = StatusCodes.Status400BadRequest };
 
-            //if (!_util.VerifyRab(rab))
-            //    return new ContentResult() { Content = "RAB inválido.", StatusCode = StatusCodes.Status400BadRequest };
+            if (!_util.VerifyRab(rab))
+                return new ContentResult() { Content = "RAB inválido.", StatusCode = StatusCodes.Status400BadRequest };
 
             var filter = Builders<Flight>.Filter.Eq(f => f.Plane.Rab, rab) &
                 Builders<Flight>.Filter.Eq("Schedule", schedule);
@@ -204,7 +193,7 @@ namespace OnTheFlyApp.FlightService.Services
                 return new ContentResult() { Content = "O horário do avião não pode ser nulo.", StatusCode = StatusCodes.Status400BadRequest };
 
             if (!_util.VerifyRab(rab))
-                return new ContentResult() { Content = "RAB inválido.", StatusCode = StatusCodes.Status400BadRequest };
+                return new ContentResult() { Content = "RAB ou Schedule inválidos.", StatusCode = StatusCodes.Status400BadRequest };
 
             var filter = Builders<Flight>.Filter.Where(f => f.Plane.Rab == rab && f.Schedule == schedule);
             var flightToDelete = await _flight.Find(filter).FirstOrDefaultAsync();

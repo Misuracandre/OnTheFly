@@ -140,16 +140,16 @@ namespace Utility
 
         public bool VerifyRab(string rab)
         {
-            if (string.IsNullOrEmpty(_rab)) return false;
+            if (string.IsNullOrEmpty(rab)) return false;
 
-            string[] validation = _rab.Split('-');
+            string[] validation = rab.Split('-');
 
             if (!Nation.Contains(validation[0])) return false;
             if (Registration.Contains(validation[1])) return false;
             var registrationLetters = validation[1].ToCharArray();
             if (registrationLetters[0] == 'Q') return false;
             if (registrationLetters[1] == 'W') return false;
-            if (_rab.Equals("PU-TAS")) return false;
+            if (rab.Equals("PU-TAS")) return false;
 
             return true;
         }
