@@ -23,7 +23,7 @@ namespace OnTheFlyApp.CompanyService.Controllers
             _util = util;
         }
 
-        [HttpGet("acitevated/", Name = "GetAll")]
+        [HttpGet("getall/activated/", Name = "GetAllActivated")]
         public ActionResult<List<CompanyGetDTO>> GetAll()
         {
             List<CompanyGetDTO> lstReturn = _companyService.GetAll();
@@ -32,7 +32,7 @@ namespace OnTheFlyApp.CompanyService.Controllers
             return lstReturn;
         }
 
-        [HttpGet("disable/", Name = "GetDisable")]
+        [HttpGet("getall/disabled/", Name = "GetDisable")]
         public ActionResult<List<CompanyGetDTO>> GetDisable()
         {
             List<CompanyGetDTO> lstReturn = _companyService.GetDisable();
@@ -41,7 +41,7 @@ namespace OnTheFlyApp.CompanyService.Controllers
             return lstReturn;
         }
 
-        [HttpGet("company/{cnpj}", Name = "GetCnpj")]
+        [HttpGet("get/company/{cnpj}", Name = "GetCnpj")]
         public ActionResult<CompanyGetDTO> GetCnpj(string cnpj)
         {
             cnpj = _util.JustDigits(cnpj);
@@ -53,7 +53,7 @@ namespace OnTheFlyApp.CompanyService.Controllers
             return companyreturn == null ? NotFound("Companhia não encontrada") : companyreturn;
         }
 
-        [HttpGet("restricted/", Name = "GetRestricted")]
+        [HttpGet("getall/restricted/", Name = "GetRestricted")]
         public ActionResult<List<CompanyGetDTO>> GetRestricted()
         {
             List<CompanyGetDTO> lstReturn = _companyService.GetRestricted();
@@ -113,7 +113,7 @@ namespace OnTheFlyApp.CompanyService.Controllers
             return companyReturn;
         }
 
-        [HttpPut("cnpj/{cnpj}", Name = "Status")]
+        [HttpPut("patch/{cnpj}", Name = "Status")]
         public async Task<ActionResult<CompanyGetDTO>> Update(string cnpj)
         {
             var companyStatus = _companyService.GetByCompany(cnpj);
@@ -137,7 +137,7 @@ namespace OnTheFlyApp.CompanyService.Controllers
             return Ok(companyReturn);
         }
 
-        [HttpPut("restricted/{cnpj}")]
+        [HttpPut("patch/restricted/{cnpj}")]
         public async Task<ActionResult> UpdateRestricted(string cnpj)
         {
             CompanyGetDTO company = new();
