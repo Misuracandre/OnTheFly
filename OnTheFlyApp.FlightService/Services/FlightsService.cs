@@ -13,7 +13,6 @@ namespace OnTheFlyApp.FlightService.Services
     {
         private readonly IMongoCollection<Flight> _flight;
         private readonly IMongoCollection<Flight> _disabled;
-        private readonly IMongoCollection<Flight> _restricted;
         private readonly IMongoCollection<Flight> _deleted;
         private readonly IMongoCollection<AirCraft> _airCraft;
         private readonly IMongoCollection<Airport> _airport;
@@ -30,7 +29,6 @@ namespace OnTheFlyApp.FlightService.Services
             _flight = database.GetCollection<Flight>(settings.FlightCollection);
             _airport = database.GetCollection<Airport>(settings.AirportCollection);
             _disabled = database.GetCollection<Flight>(settings.DisabledCollection);
-            _restricted = database.GetCollection<Flight>(settings.RestrictedCollection);
             _deleted = database.GetCollection<Flight>(settings.DeletedCollection);
             _airCraft = database.GetCollection<AirCraft>(settings.AirCraftCollection);
             _util = util;
