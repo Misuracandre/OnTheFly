@@ -103,7 +103,7 @@ namespace OnTheFlyApp.FlightService.Services
             try
             {
                 // Busca informações da companhia aérea
-                HttpResponseMessage airCraftResponse = await FlightsService.flightClient.GetAsync("https://localhost:7117/api/AirCraftsService/" + flight.Plane.Rab);
+                HttpResponseMessage airCraftResponse = await FlightsService.flightClient.GetAsync("https://localhost:5002/api/AirCraftsService/" + flight.Plane.Rab);
                 airCraftResponse.EnsureSuccessStatusCode();
                 string airCraftJson = await airCraftResponse.Content.ReadAsStringAsync();
                 airCraft = JsonConvert.DeserializeObject<AirCraft>(airCraftJson);
