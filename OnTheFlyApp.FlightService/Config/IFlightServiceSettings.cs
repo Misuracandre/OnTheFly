@@ -5,7 +5,6 @@
         string FlightCollection { get; set; }
         string DisabledCollection { get; set; }
         string DeletedCollection { get; set; }
-        string RestrictedCollection { get; set; }
         string AirportCollection{ get; set; }
         string AirCraftCollection { get;  set; }
         string ConnectionString { get; set; }
