@@ -154,9 +154,6 @@ namespace OnTheFlyApp.FlightService.Services
             var filter = Builders<Flight>.Filter.Eq(f => f.Plane.Rab, rab) &
                 Builders<Flight>.Filter.Eq("Schedule", schedule);
 
-            //var options = new FindOneAndUpdateOptions<Flight, Flight> { ReturnDocument = ReturnDocument.After };
-            //var update = Builders<Flight>.Update.Set("Status", !status);
-
             var flightUpdated = await _flight.Find(filter).FirstOrDefaultAsync();
 
             if (flightUpdated == null)
