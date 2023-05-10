@@ -36,7 +36,20 @@ namespace OnTheFly.Models.Dto
                 Complement = company.Address.Complement,
                 City = company.Address.City,
                 State = company.Address.State,
-
+            };
+        }
+        public CompanyGetDTO(CompanyInsertDTO company)
+        {
+            Cnpj = company.Cnpj;
+            Name = company.Name;
+            NameOpt = company.NameOpt;
+            DtOpen = company.DtOpen;
+            Status = company.Status;
+            Address = new AddressDTO()
+            {
+                ZipCode = company.Address.ZipCode,
+                Number = company.Address.Number,
+                Complement = company.Address.Complement,
             };
         }
     }

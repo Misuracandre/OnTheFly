@@ -16,7 +16,7 @@ namespace OnTheFlyApp.CompanyService.Service
         private readonly IMongoCollection<Company> _companyDisabled;
         private readonly IMongoCollection<Address> _address;
         static readonly HttpClient companyClient = new HttpClient();
-        static readonly string endpointAirCraft = "https://localhost:7117/api/AirCraftsService/company/";
+        static readonly string endpointAirCraft = "https://localhost:5002/api/AirCraftsService/company/";
         public CompaniesService() { }
         public CompaniesService(ICompanyServiceSettings settings)
         {
@@ -68,7 +68,7 @@ namespace OnTheFlyApp.CompanyService.Service
 
             var company = _company.Find<Company>(c => c.Cnpj == cnpj).FirstOrDefault();
             var companyDisabled = _companyDisabled.Find<Company>(c => c.Cnpj == cnpj).FirstOrDefault();
-            if (companyDisabled == null && company == null) throw new Exception();
+            if (companyDisabled == null && company == null) return null;
 
             if(companyDisabled != null) { return companyReturn = new(companyDisabled); }
             else return companyReturn = new(company);
@@ -89,7 +89,7 @@ namespace OnTheFlyApp.CompanyService.Service
             if (_address.Find(a => a.Number == company.Address.Number && a.ZipCode == company.Address.ZipCode).FirstOrDefault() != null)
                 throw new Exception();
             company.Status = false;
-            _address.InsertOne(company.Address);
+            _address.InsertOne(new Address(company.Address));
             _company.InsertOne(company);
 
             return company;

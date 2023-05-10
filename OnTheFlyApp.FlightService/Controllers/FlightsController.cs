@@ -21,8 +21,6 @@ namespace OnTheFlyApp.FlightService.Controllers
         [HttpGet("GetAll")]
         public ActionResult<List<FlightGetDTO>> Get() => _flightsService.GetAll();
 
-        //[HttpGet(Name = "GetDisabled")]
-        //public List<Flight> GetDisabled() => _flightsService.GetDisabled();
         [HttpGet("GetDeleted")]
         public ActionResult<List<Flight>> GetDeleted() => _flightsService.GetDeleted();
 

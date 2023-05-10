@@ -86,18 +86,12 @@ namespace OnTheFlyApp.SaleService.Services
 
         public async Task<ActionResult> Create(SaleDTO sale)
         {
-            //numero de vendas nao exceda a capacidade do aviao
-            //garantir que o mesmo cpf nao apareca na lista de passageiros
-            //verificar se o passageiro nao esta restrito, cancelar venda de verdadeiro
-            //primeiro passageiro deve ser maior de 18 anos, se menor de 18, cancela a venda
-
             Sale s = new Sale(sale);
             HttpClient saleClient = new HttpClient();
             try
             {
                 var dt = sale.Flight.Schedule.ToString("yyyy-MM-THH:mm:ss.FFF+00:00");
-                //HttpResponseMessage response = await saleClient.GetAsync("https://localhost:7222/api/Flights/" + sale.Flight.Plane.Rab + "/" + sale.Flight.Schedule);
-                HttpResponseMessage response = await saleClient.GetAsync("https://localhost:7222/api/Flights/AAG/2023-05-09T03%3A04%3A31.966%2B00%3A00");
+                HttpResponseMessage response = await saleClient.GetAsync("https://localhost:5003/api/Flights/GetByIdentifier/PT-LSD/2023-05-10T07%3A04%3A41.860%2B00%3A00");
                 response.EnsureSuccessStatusCode();
                 string flightJson = await response.Content.ReadAsStringAsync();
                 s.Flight = JsonConvert.DeserializeObject<Flight>(flightJson);
@@ -110,10 +104,10 @@ namespace OnTheFlyApp.SaleService.Services
 
             try
             {
-                HttpResponseMessage response = await saleClient.GetAsync("https://localhost:7195/api/PassengersService/" + sale.Passengers[0].Cpf);
+                HttpResponseMessage response = await saleClient.GetAsync("https://localhost:5000/api/PassengersService/" + sale.Passengers[0].Cpf);
                 response.EnsureSuccessStatusCode();
                 string flightJson = await response.Content.ReadAsStringAsync();
-                s.Passengers[0] = new(JsonConvert.DeserializeObject<Passenger>(flightJson));
+                s.Passengers[0] =JsonConvert.DeserializeObject<PassengerDTO>(flightJson);
             }
             catch (Exception)
             {
@@ -121,13 +115,11 @@ namespace OnTheFlyApp.SaleService.Services
                 throw;
             }
 
-            //Verifica se o numero de vendas nao excede a capacidade do aviao
-            if (s.Flight.Plane.Capacity > s.Flight.Sales)
+            if (s.Flight.Plane.Capacity < s.Flight.Sales)
             {
                 throw new InvalidOperationException("Capacidade do avião excedida");
             }
 
-            //Verifica se o mesmo CPF nao aparece na lista de passageiros
             var passengerCpfs = new List<string>();
             foreach (var passenger in s.Passengers)
             {
@@ -138,13 +130,11 @@ namespace OnTheFlyApp.SaleService.Services
                 passengerCpfs.Add(passenger.Cpf);
             }
 
-            //Verificar se o passageiro nao esta restrito
             if (s.Passengers.Any(p => p.Status == false))
             {
                 throw new InvalidOperationException("A venda foi cancelada devido a um passageiro restrito");
             }
 
-            //Verificar se primeiro passageiro é maior de 18 anos
             DateTime i = DateTime.Parse(s.Passengers[0].DtBirth).AddYears(18);
             if (i > DateTime.Now)
             {
@@ -155,40 +145,13 @@ namespace OnTheFlyApp.SaleService.Services
             {
                 if (!PostMQMessage(s, true)) return null;
 
-                //while (s == null)
-                //{
-                //    s = _reservation.Find(s => s.Flight.Schedule == s.Flight.Schedule &&
-                //                           s.Flight.Plane.Rab == s.Flight.Plane.Rab &&
-                //                           s.Passengers[0].Cpf == s.Passengers[0].Cpf).FirstOrDefault();
-                //    if (s == null) return null;
-                //}
-                //return s;
-
-                //s =  await _reservation.Find(s => s.Flight.Schedule == s.Flight.Schedule &&
-                //                           s.Flight.Plane.Rab == s.Flight.Plane.Rab &&
-                //                           s.Passengers[0].Cpf == s.Passengers[0].Cpf).FirstOrDefaultAsync();
                 return new ContentResult() { Content = "Reserva inserida na fila", StatusCode = StatusCodes.Status200OK };
             }
             else
             {
                 if (!PostMQMessage(s, false)) return null;
-                //while (s == null)
-                //{
-                //    s = _sale.Find(s => s.Flight.Schedule == s.Flight.Schedule &&
-                //                       s.Flight.Plane.Rab == s.Flight.Plane.Rab &&
-                //                       s.Passengers[0].Cpf == s.Passengers[0].Cpf).FirstOrDefault();
-                //    if (s == null) return null;
-                //}
-                //return s;
-
-                //s = await _sale.Find(s => s.Flight.Schedule == s.Flight.Schedule &&
-                //                           s.Flight.Plane.Rab == s.Flight.Plane.Rab &&
-                //                           s.Passengers[0].Cpf == s.Passengers[0].Cpf).FirstOrDefaultAsync();
                 return new ContentResult() { Content = "Venda inserida na fila", StatusCode = StatusCodes.Status200OK };
             }
-
-            //_sale.InsertOne(s);
-            //return new ContentResult() { Content = "Venda inserida na fila", StatusCode = StatusCodes.Status200OK }
         }
     }
 }

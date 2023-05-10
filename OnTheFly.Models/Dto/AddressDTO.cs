@@ -9,8 +9,6 @@ namespace OnTheFly.Models.Dto
 {
     public class AddressDTO
     {
-        [JsonIgnore]
-        public string Id { get; set; }
         [JsonProperty("cep")]
         public string ZipCode { get; set; }
 
@@ -31,7 +29,6 @@ namespace OnTheFly.Models.Dto
 
         public AddressDTO(Address address)
         {
-            this.Id = address.Id;
             this.ZipCode = address.ZipCode;
             this.Street = address.Street;
             this.Number = address.Number;

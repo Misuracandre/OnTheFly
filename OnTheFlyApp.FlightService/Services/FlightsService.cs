@@ -103,7 +103,7 @@ namespace OnTheFlyApp.FlightService.Services
             try
             {
                 // Busca informações da companhia aérea
-                HttpResponseMessage airCraftResponse = await FlightsService.flightClient.GetAsync("https://localhost:7117/api/AirCraftsService/" + flight.Plane.Rab);
+                HttpResponseMessage airCraftResponse = await FlightsService.flightClient.GetAsync("https://localhost:5002/api/AirCraftsService/" + flight.Plane.Rab);
                 airCraftResponse.EnsureSuccessStatusCode();
                 string airCraftJson = await airCraftResponse.Content.ReadAsStringAsync();
                 airCraft = JsonConvert.DeserializeObject<AirCraft>(airCraftJson);
@@ -153,9 +153,6 @@ namespace OnTheFlyApp.FlightService.Services
 
             var filter = Builders<Flight>.Filter.Eq(f => f.Plane.Rab, rab) &
                 Builders<Flight>.Filter.Eq("Schedule", schedule);
-
-            //var options = new FindOneAndUpdateOptions<Flight, Flight> { ReturnDocument = ReturnDocument.After };
-            //var update = Builders<Flight>.Update.Set("Status", !status);
 
             var flightUpdated = await _flight.Find(filter).FirstOrDefaultAsync();
 

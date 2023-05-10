@@ -22,7 +22,7 @@ namespace OnTheFly.Models
         public string NameOpt { get; set; }
         public DateTime DtOpen { get; set; }
         public bool? Status { get; set; }
-        public Address? Address { get; set; }
+        public AddressDTO? Address { get; set; }
 
         public Company() { }
         public Company(CompanyInsertDTO company)
@@ -31,7 +31,7 @@ namespace OnTheFly.Models
             Name = company.Name;
             NameOpt = company.NameOpt;
             Status = company.Status;
-            Address = new Address() { ZipCode = company.Address.ZipCode, Number =  company.Address.Number };
+            Address = new AddressDTO() { ZipCode = company.Address.ZipCode, Number =  company.Address.Number };
         }
         public Company(CompanyGetDTO company)
         {

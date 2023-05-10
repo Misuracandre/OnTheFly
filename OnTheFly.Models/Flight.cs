@@ -18,7 +18,7 @@ namespace OnTheFly.Models
         public DateTime Schedule { get; set; }
         public bool Status { get; set; }
         public Airport Arrival { get; set; }
-        public AirCraft Plane { get; set; }
+        public AirCraftDTO Plane { get; set; }
 
         public Flight() { }
 
@@ -29,7 +29,7 @@ namespace OnTheFly.Models
             this.Schedule = flightDTO.Schedule;
             this.Status = flightDTO.Status;
             this.Arrival = flightDTO.Arrival;
-            this.Plane = new AirCraft(flightDTO.Plane);
+            this.Plane = flightDTO.Plane;
         }
 
         public Flight(FlightInsertDTO flightInsertDTO)
@@ -39,7 +39,7 @@ namespace OnTheFly.Models
             this.Schedule = flightInsertDTO.Schedule;
             this.Status = flightInsertDTO.Status;
             this.Arrival = flightInsertDTO.Arrival;
-            this.Plane = new AirCraft(flightInsertDTO.Plane);
+            this.Plane = flightInsertDTO.Plane;
         }
 
         public Flight(FlightGetDTO flightGetDTO)
@@ -49,7 +49,7 @@ namespace OnTheFly.Models
             this.Schedule = flightGetDTO.Schedule;
             this.Status = flightGetDTO.Status;
             this.Arrival = flightGetDTO.Arrival;
-            this.Plane = new AirCraft(flightGetDTO.Plane);
+            this.Plane = flightGetDTO.Plane;
         }
     }
 }
