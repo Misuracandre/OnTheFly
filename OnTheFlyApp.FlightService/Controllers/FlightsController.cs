@@ -28,7 +28,7 @@ namespace OnTheFlyApp.FlightService.Controllers
         public async Task<ActionResult<FlightGetDTO>> GetFlightByRabAndSchedule(string rab, DateTime schedule) => await _flightsService.GetFlightByRabAndSchedule(rab, schedule);
 
         [HttpPost("CreateFlight")]
-        public async Task <ActionResult<FlightDTO>> CreateFlight(FlightInsertDTO flightInsertDTO) => await _flightsService.CreateFlight(flightInsertDTO);
+        public async Task<ActionResult<FlightDTO>> CreateFlight(FlightInsertDTO flightInsertDTO) => await _flightsService.CreateFlight(flightInsertDTO);
 
         [HttpPut("UpdateStatus/{rab}/{schedule}", Name = "UpdateStatus")]
         public IActionResult UpdateFlight(string rab, DateTime schedule, bool status)
@@ -48,7 +48,7 @@ namespace OnTheFlyApp.FlightService.Controllers
                 return new ContentResult() { Content = "Voo não encontrado.", StatusCode = StatusCodes.Status404NotFound };
             }
 
-            return await _flightsService.DeleteFlight(rab, schedule);           
+            return await _flightsService.DeleteFlight(rab, schedule);
         }
 
     }
