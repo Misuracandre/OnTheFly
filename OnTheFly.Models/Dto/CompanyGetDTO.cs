@@ -26,6 +26,7 @@ namespace OnTheFly.Models.Dto
             Name = company.Name;
             NameOpt = company.NameOpt;
             DtOpen = company.DtOpen.ToString("dd/MM/yyyy");
+
             Status = company.Status;
             Address = new AddressDTO()
             {
@@ -35,6 +36,7 @@ namespace OnTheFly.Models.Dto
                 Complement = company.Address.Complement,
                 City = company.Address.City,
                 State = company.Address.State,
+
             };
         }
     }

@@ -6,6 +6,10 @@ namespace Utility
 {
     public class Util
     {
+        private string _rab;
+        List<string> Nation = new() { "PP", "PR", "PS", "PT", "PU" };
+        List<string> Registration = new() { "SOS", "XXX", "PAN", "TTT", "IFR", "VMC", "IMC", "TNC", "PQP" };
+
         public string JustDigits(string text)
         {
             if (text == "" || text == null) return null;
@@ -115,9 +119,7 @@ namespace Utility
             catch (HttpRequestException)
             {
                 return null;
-            }
-
-            
+            }            
         }
 
         public bool LegalAge (DateTime dtBirth)
@@ -139,15 +141,19 @@ namespace Utility
 
         public bool VerifyRab(string rab)
         {
-            //formato válido: PT/PR/PP/PS/PU - 3LETRAS
-            if (rab == null || rab.Length != 6)
-            {
-                return false;
-            }
-            return true;                
-            
+            if (string.IsNullOrEmpty(rab)) return false;
+
+            string[] validation = rab.Split('-');
+
+            if (!Nation.Contains(validation[0])) return false;
+            if (Registration.Contains(validation[1])) return false;
+            var registrationLetters = validation[1].ToCharArray();
+            if (registrationLetters[0] == 'Q') return false;
+            if (registrationLetters[1] == 'W') return false;
+            if (rab.Equals("PU-TAS")) return false;
+
+            return true;
         }
 
-        
     }
 }

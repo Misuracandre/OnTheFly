@@ -17,11 +17,20 @@ namespace OnTheFly.Models.Dto
         public string? Name { get; set; }
         [StringLength(30)]
         public string NameOpt { get; set; }
-        public DateTime DtOpen { get; set; }
+        public string DtOpen { get; set; }
         public bool? Status { get; set; }
         public AddressInsert Address { get; set; }
 
         public CompanyInsertDTO() { }
-        
+        public CompanyInsertDTO(Company company)
+        {
+            Cnpj = company.Cnpj;
+            Name = company.Name;
+            NameOpt = company.NameOpt;
+            DtOpen = company.DtOpen;
+            Status = company.Status;
+            Address = new AddressInsert(company.Address);
+        }
+
     }
 }

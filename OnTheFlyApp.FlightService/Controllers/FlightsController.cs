@@ -18,23 +18,21 @@ namespace OnTheFlyApp.FlightService.Controllers
             _flightsService = flightsService;
         }
 
-        [HttpGet]
-        public List<FlightDTO> Get() => _flightsService.GetAll();
+        [HttpGet("GetAll")]
+        public ActionResult<List<FlightGetDTO>> Get() => _flightsService.GetAll();
 
-        [HttpGet("activated", Name = "GetActivated")]
-        public List<Flight> GetDisabled() => _flightsService.GetDisabled();
+        //[HttpGet(Name = "GetDisabled")]
+        //public List<Flight> GetDisabled() => _flightsService.GetDisabled();
+        [HttpGet("GetDeleted")]
+        public ActionResult<List<Flight>> GetDeleted() => _flightsService.GetDeleted();
 
-        [HttpGet("{rab}/{schedule}", Name = "GetByAirCraftAndSchedule")]
-        public async Task<ActionResult<FlightDTO>> GetFlightByRabAndSchedule(string rab, DateTime schedule) => await _flightsService.GetFlightByRabAndSchedule(rab, schedule);
+        [HttpGet("GetByIdentifier/{rab}/{schedule}", Name = "GetByRabAndSchedule")]
+        public async Task<ActionResult<FlightGetDTO>> GetFlightByRabAndSchedule(string rab, DateTime schedule) => await _flightsService.GetFlightByRabAndSchedule(rab, schedule);
 
+        [HttpPost("CreateFlight")]
+        public async Task <ActionResult<FlightDTO>> CreateFlight(FlightInsertDTO flightInsertDTO) => await _flightsService.CreateFlight(flightInsertDTO);
 
-        //[HttpGet("AirCraftAndSchedule", Name = "GetByAirCraftAndSchedule")]
-        //public async Task<ActionResult<FlightDTO>> GetFlightByRabAndSchedule(string rab, DateTime schedule) => await _flightsService.GetFlightByRabAndSchedule(rab, schedule);
-
-        [HttpPost]
-        public async Task<FlightDTO> CreateFlight(Flight flight) => await _flightsService.CreateFlight(flight);
-
-        [HttpPut("{rab}/{schedule}")]
+        [HttpPut("UpdateStatus/{rab}/{schedule}", Name = "UpdateStatus")]
         public IActionResult UpdateFlight(string rab, DateTime schedule, bool status)
         {
             _flightsService.UpdateFlight(rab, schedule, status);
@@ -42,19 +40,17 @@ namespace OnTheFlyApp.FlightService.Controllers
             return Ok();
         }
 
-        [HttpDelete("{rab}/{schedule}", Name = "DeleteFlightByRabAndSchedule")]
+        [HttpDelete("DeleteFlight/{rab}/{schedule}", Name = "DeleteFlightByRabAndSchedule")]
         public async Task<IActionResult> DeleteFlight(string rab, DateTime schedule)
         {
             var flight = _flightsService.GetFlightByRabAndSchedule(rab, schedule);
 
             if (flight == null)
             {
-                return NotFound();
+                return new ContentResult() { Content = "Voo não encontrado.", StatusCode = StatusCodes.Status404NotFound };
             }
 
-            await _flightsService.DeleteFlight(rab, schedule);
-
-            return Ok();
+            return await _flightsService.DeleteFlight(rab, schedule);           
         }
 
     }
