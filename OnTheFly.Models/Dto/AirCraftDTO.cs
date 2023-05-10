@@ -24,7 +24,22 @@ namespace OnTheFly.Models.Dto
             this.Capacity = airCraft.Capacity;
             this.DtRegistry = airCraft.DtRegistry;
             this.DtLastFlight = airCraft.DtLastFlight;
-            this.Company = new CompanyInsertDTO(airCraft.Company);
+
+            this.Company = airCraft.Company;
+
         }
+
+        public AirCraftDTO(AirCraftInsertDTO airCraftInsertDTO)
+        {
+            this.Rab = airCraftInsertDTO.Rab;
+            this.Capacity = airCraftInsertDTO.Capacity;
+            this.DtRegistry = airCraftInsertDTO.DtRegistry;
+            this.DtLastFlight = airCraftInsertDTO.DtLastFlight;
+            this.Company = new CompanyGetDTO()
+            {
+                Cnpj = airCraftInsertDTO.Company
+            };
+        }
+        
     }
 }
