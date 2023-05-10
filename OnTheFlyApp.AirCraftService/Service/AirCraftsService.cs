@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson.IO;
 using MongoDB.Driver;
 using OnTheFly.Models;
 using OnTheFly.Models.Dto;
 using OnTheFlyApp.AirCraftService.config;
 using System.Net;
 using Utility;
+using Newtonsoft.Json;
 
 namespace OnTheFlyApp.AirCraftService.Service
 {
@@ -13,11 +15,13 @@ namespace OnTheFlyApp.AirCraftService.Service
         private readonly IMongoCollection<AirCraft> _aircraft;
         private readonly IMongoCollection<AirCraft> _aircraftDisabled;
         private readonly IMongoCollection<Company> _company;
+        static readonly HttpClient aircraftClient = new HttpClient();
+        static readonly string endCompany = "https://localhost:7219/api/CompaniesService/cnpj?cnpj=";
         
 
         public AirCraftsService() { }
 
-        public AirCraftsService(IAirCraftServiceSettings settings, Util util)
+        public AirCraftsService(IAirCraftServiceSettings settings)
         {
             var client = new MongoClient(settings.ConnectionString);
             var database = client.GetDatabase(settings.Database);
@@ -25,6 +29,34 @@ namespace OnTheFlyApp.AirCraftService.Service
             _aircraftDisabled = database.GetCollection<AirCraft>(settings.AircraftDisabledCollection);
             _company = database.GetCollection<Company>(settings.AircraftCompanyCollection);
             
+        }
+
+        public async Task<ActionResult<AirCraftDTO>> Create(AirCraftInsertDTO aircraft)
+        {
+            AirCraftDTO aircraftReturn = new(aircraft);
+            var companyObj = new CompanyGetDTO();
+            try
+            {                
+                HttpResponseMessage response = await AirCraftsService.aircraftClient.GetAsync(endCompany + aircraft.Company);
+                response.EnsureSuccessStatusCode();
+                var companyReturn = await response.Content.ReadAsStringAsync();
+                companyObj = Newtonsoft.Json.JsonConvert.DeserializeObject<CompanyGetDTO>(companyReturn);
+               
+
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+
+            aircraftReturn.Company = companyObj;
+            aircraftReturn.Company.Address = new();
+            aircraftReturn.Company.Address = companyObj.Address;
+            AirCraft aircraftdto = new(aircraftReturn);
+
+            _aircraft.InsertOne(aircraftdto);
+            return aircraftReturn;
+
         }
 
         public ActionResult<List<AirCraftDTO>> GetAll()
@@ -51,12 +83,10 @@ namespace OnTheFlyApp.AirCraftService.Service
             return new AirCraftDTO(a);
         }
 
-        public AirCraft Create(AirCraft aircraft)
-        {
-            aircraft.Id = "";
-            _aircraft.InsertOne(aircraft);
-            return aircraft;
-        }
+        
+        
+        
+
 
         public List<AirCraftDTO> GetDisable()
         {
@@ -69,7 +99,6 @@ namespace OnTheFlyApp.AirCraftService.Service
             return lstReturn;
         }
 
-        
 
         public List<AirCraft> GetByCompany(string cnpj)
         {

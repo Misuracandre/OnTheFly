@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using OnTheFly.Models;
+using System;
 
 namespace Utility
 {
@@ -135,5 +136,18 @@ namespace Utility
                 return true;
             return false;
         }
+
+        public bool VerifyRab(string rab)
+        {
+            //formato válido: PT/PR/PP/PS/PU - 3LETRAS
+            if (rab == null || rab.Length != 6)
+            {
+                return false;
+            }
+            return true;                
+            
+        }
+
+        
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using OnTheFly.Models;
 using OnTheFly.Models.Dto;
 using OnTheFlyApp.AirCraftService.Service;
+using Utility;
 
 namespace OnTheFlyApp.AirCraftService.Controllers
 {
@@ -11,6 +12,7 @@ namespace OnTheFlyApp.AirCraftService.Controllers
     public class AirCraftsServiceController : ControllerBase
     {
         private readonly AirCraftsService _aircraftService;
+        private readonly Util _util;
 
         public AirCraftsServiceController(AirCraftsService aircraftService)
         {
@@ -49,7 +51,7 @@ namespace OnTheFlyApp.AirCraftService.Controllers
 
 
         [HttpPost]
-        public ActionResult<AirCraft> Create(AirCraft aircraft) => _aircraftService.Create(aircraft);
+        public async Task<ActionResult<AirCraftDTO>> Create(AirCraftInsertDTO aircraft) => await _aircraftService.Create(aircraft);
 
         [HttpDelete("{rab}")]
         public IActionResult Delete(string rab)
