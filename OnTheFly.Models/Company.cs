@@ -32,7 +32,7 @@ namespace OnTheFly.Models
             Name = company.Name;
             NameOpt = company.NameOpt;
             Status = company.Status;
-            Address = new Address()
+            Address = new AddressDTO()
             {
                 ZipCode = company.Address.ZipCode,
                 Street = company.Address.Street,
