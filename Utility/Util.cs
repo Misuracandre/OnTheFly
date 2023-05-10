@@ -8,6 +8,7 @@ namespace Utility
         private string _rab;
         List<string> Nation = new() { "PP", "PR", "PS", "PT", "PU" };
         List<string> Registration = new() { "SOS", "XXX", "PAN", "TTT", "IFR", "VMC", "IMC", "TNC", "PQP" };
+
         public string JustDigits(string text)
         {
             if (text == "" || text == null) return null;
@@ -137,7 +138,7 @@ namespace Utility
             return false;
         }
 
-        public bool VerifyRab()
+        public bool VerifyRab(string rab)
         {
             if (string.IsNullOrEmpty(_rab)) return false;
 

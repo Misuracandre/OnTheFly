@@ -18,11 +18,13 @@ namespace OnTheFlyApp.FlightService.Controllers
             _flightsService = flightsService;
         }
 
-        [HttpGet]
-        public List<FlightDTO> Get() => _flightsService.GetAll();
+        [HttpGet("GetAll")]
+        public ActionResult<List<FlightDTO>> Get() => _flightsService.GetAll();
 
-        [HttpGet("disabled", Name = "GetDisabled")]
-        public List<Flight> GetDisabled() => _flightsService.GetDisabled();
+        //[HttpGet(Name = "GetDisabled")]
+        //public List<Flight> GetDisabled() => _flightsService.GetDisabled();
+        [HttpGet(Name = "GetDeleted")]
+        public ActionResult<List<Flight>> GetDeleted() => _flightsService.GetDeleted();
 
         [HttpGet("{rab}/{schedule}", Name = "GetByAirCraftAndSchedule")]
         public async Task<ActionResult<FlightDTO>> GetFlightByRabAndSchedule(string rab, DateTime schedule) => await _flightsService.GetFlightByRabAndSchedule(rab, schedule);
@@ -31,10 +33,10 @@ namespace OnTheFlyApp.FlightService.Controllers
         //[HttpGet("AirCraftAndSchedule", Name = "GetByAirCraftAndSchedule")]
         //public async Task<ActionResult<FlightDTO>> GetFlightByRabAndSchedule(string rab, DateTime schedule) => await _flightsService.GetFlightByRabAndSchedule(rab, schedule);
 
-        [HttpPost]
-        public async Task<FlightDTO> CreateFlight(Flight flight) => await _flightsService.CreateFlight(flight);
+        [HttpPost(Name = "CreateFlight")]
+        public async Task <ActionResult<FlightDTO>> CreateFlight(Flight flight) => await _flightsService.CreateFlight(flight);
 
-        [HttpPut("{rab}/{schedule}")]
+        [HttpPut("{rab}/{schedule}", Name = "UpdateStatus")]
         public IActionResult UpdateFlight(string rab, DateTime schedule, bool status)
         {
             _flightsService.UpdateFlight(rab, schedule, status);

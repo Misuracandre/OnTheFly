@@ -4,6 +4,7 @@
     {
         public string FlightCollection { get; set; }
         public string DisabledCollection { get; set; }
+        public string DeletedCollection { get; set; }
         public string AirportCollection { get; set; }
         public string AirCraftCollection { get; set; }
         public string ConnectionString { get; set; }
