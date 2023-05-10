@@ -34,8 +34,9 @@ namespace OnTheFlyApp.CompanyService.Controllers
         {
             try
             {
+                cnpj = _util.JustDigits(cnpj);
                 var companyreturn = _companyService.GetByCompany(cnpj);
-                return companyreturn;
+                return companyreturn == null ? NotFound("Companhia não encontrada") : companyreturn;
             }
             catch (Exception)
             {

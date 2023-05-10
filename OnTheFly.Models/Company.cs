@@ -22,9 +22,10 @@ namespace OnTheFly.Models
         public string NameOpt { get; set; }
         public DateTime DtOpen { get; set; }
         public bool? Status { get; set; }
-        public Address? Address { get; set; }
+        public AddressDTO? Address { get; set; }
 
         public Company() { }
+
         public Company(CompanyGetDTO company)
         {
             Cnpj = company.Cnpj;

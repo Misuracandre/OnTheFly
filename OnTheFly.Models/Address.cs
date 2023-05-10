@@ -1,6 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using Newtonsoft.Json;
+using OnTheFly.Models.Dto;
 
 namespace OnTheFly.Models
 {
@@ -27,7 +28,7 @@ namespace OnTheFly.Models
         public string State { get; set; }
 
         public Address () { }
-        public Address(Address address)
+        public Address(AddressDTO address)
         {
             ZipCode = address.ZipCode;
             Street = address.Street;

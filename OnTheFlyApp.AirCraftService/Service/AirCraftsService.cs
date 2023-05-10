@@ -1,7 +1,10 @@
-﻿using MongoDB.Driver;
+﻿using Microsoft.AspNetCore.Mvc;
+using MongoDB.Driver;
 using OnTheFly.Models;
 using OnTheFly.Models.Dto;
 using OnTheFlyApp.AirCraftService.config;
+using System.Net;
+using Newtonsoft.Json;
 
 namespace OnTheFlyApp.AirCraftService.Service
 {
@@ -11,6 +14,8 @@ namespace OnTheFlyApp.AirCraftService.Service
         private readonly IMongoCollection<AirCraft> _aircraftDisabled;
         private readonly IMongoCollection<Company> _company;
         static readonly HttpClient aircraftClient = new HttpClient();
+        static readonly string endCompany = "https://localhost:5001/api/CompaniesService/cnpj/";
+        
 
         public AirCraftsService() { }
 
@@ -21,18 +26,65 @@ namespace OnTheFlyApp.AirCraftService.Service
             _aircraft = database.GetCollection<AirCraft>(settings.AircraftCollection);
             _aircraftDisabled = database.GetCollection<AirCraft>(settings.AircraftDisabledCollection);
             _company = database.GetCollection<Company>(settings.AircraftCompanyCollection);
+            
         }
 
-        public List<AirCraftDTO> GetAll()
+        public async Task<ActionResult<AirCraftDTO>> Create(AirCraftInsertDTO aircraft)
         {
-            List<AirCraft> aircraftslst = new();
-            aircraftslst = _aircraft.Find(a => true).ToList();
+            AirCraftDTO aircraftReturn = new(aircraft);
+            var companyObj = new CompanyGetDTO();
+            companyObj.Address = new();
+            try
+            {                
+                HttpResponseMessage response = await AirCraftsService.aircraftClient.GetAsync("https://localhost:5001/api/CompanyService/cnpj?cnpj=" + aircraft.Company);
+                response.EnsureSuccessStatusCode();
+                var companyReturn = await response.Content.ReadAsStringAsync();
+                companyObj = JsonConvert.DeserializeObject<CompanyGetDTO>(companyReturn);
 
-            List<AirCraftDTO> lstReturn = new();
-            foreach (var aircraft in aircraftslst) { AirCraftDTO aircraftDTO = new(); lstReturn.Add(aircraftDTO = new(aircraft)); }
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
 
-            return lstReturn;
+            aircraftReturn.Company = companyObj;
+            aircraftReturn.Company.Address = new();
+            aircraftReturn.Company.Address = companyObj.Address;
+            AirCraft aircraftdto = new(aircraftReturn);
+
+            _aircraft.InsertOne(aircraftdto);
+            return aircraftReturn;
+
         }
+
+        public ActionResult<List<AirCraftDTO>> GetAll()
+        {
+            List<AirCraft> aircrafts = _aircraft.Find<AirCraft>(a => true).ToList();
+            if (aircrafts.Count == 0)
+                return new ContentResult() { Content = "Nenhuma aeronave encontrada", StatusCode = StatusCodes.Status400BadRequest };
+
+            List<AirCraftDTO> aircraftDTOs = new();
+            foreach (var aircraft in aircrafts)
+            {
+                AirCraftDTO a = new(aircraft);
+                aircraftDTOs.Add(a);
+            }
+
+            return aircraftDTOs;
+        }
+
+        public ActionResult<AirCraftDTO> GetByRab(string rab)
+        {
+            AirCraft a = _aircraft.Find(a => a.Rab == rab).FirstOrDefault();
+            if (a == null)
+                return new ContentResult() { Content = "Rab não encontrado", StatusCode = StatusCodes.Status400BadRequest };
+            return new AirCraftDTO(a);
+        }
+
+        
+        
+        
+
 
         public List<AirCraftDTO> GetDisable()
         {
@@ -45,7 +97,6 @@ namespace OnTheFlyApp.AirCraftService.Service
             return lstReturn;
         }
 
-        public AirCraft GetByRab(string rab) => _aircraft.Find(a => a.Rab == rab).FirstOrDefault();
 
         public List<AirCraft> GetByCompany(string cnpj)
         {
@@ -55,12 +106,7 @@ namespace OnTheFlyApp.AirCraftService.Service
             return aircrafts;
         }
 
-        public AirCraft Create(AirCraft aircraft)
-        {
-            aircraft.Id = "";
-            _aircraft.InsertOne(aircraft);
-            return aircraft;
-        }
+        
 
         public AirCraft Update(string rab, DateTime dtLastFlight) 
         {

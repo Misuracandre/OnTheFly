@@ -29,8 +29,7 @@ namespace OnTheFly.Models
             this.Flight = new();
             this.Flight.Schedule = DateTime.Now;
             this.Flight.Plane = new();
-            this.Passengers = new List<PassengerDTO>();
-            this.Passengers.Add(new());
+            this.Passengers = sale.Passengers;
         }
     }
 }

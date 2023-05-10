@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using MongoDB.Bson;
@@ -27,9 +28,14 @@ namespace OnTheFly.Models.Dto
             Cnpj = company.Cnpj;
             Name = company.Name;
             NameOpt = company.NameOpt;
-            DtOpen = company.DtOpen;
+            DtOpen = company.DtOpen.ToString();
             Status = company.Status;
-            Address = new AddressInsert(company.Address);
+            Address = new AddressInsert()
+            {
+                ZipCode = company.Address.ZipCode,
+                Number = company.Address.Number,
+                Complement = company.Address.Complement
+            };
         }
 
     }

@@ -9,11 +9,8 @@ using MongoDB.Bson;
 
 namespace OnTheFly.Models.Dto
 {
-    public class PassengerDTO
+    public class PassengerUpdateDTO
     {
-
-        [StringLength(14)]
-        public string Cpf { get; set; }
 
         [StringLength(30)]
         public string Name { get; set; }
@@ -23,35 +20,24 @@ namespace OnTheFly.Models.Dto
 
         [StringLength(14)]
         public string? Phone { get; set; }
-
-
         public string DtBirth { get; set; }
 
-        public string DtRegister { get; set; }
-        public bool? Status { get; set; }
+        public AddressUpdateDTO Address { get; set; }
 
+        public PassengerUpdateDTO() { }
 
-        public AddressDTO Address { get; set; }
-
-        public PassengerDTO() { }
-
-        public PassengerDTO(Passenger passenger)
+        public PassengerUpdateDTO(Passenger passenger)
         {
-            this.Cpf = passenger.Cpf;
             this.Name = passenger.Name;
             this.Gender = passenger.Gender.ToUpper();
             this.Phone = passenger.Phone;
             this.DtBirth = passenger.DtBirth.ToShortDateString();
-            this.DtRegister = passenger.DtRegister.ToString("dd/MM/yyyy HH:mm:ss");
-            this.Status = passenger.Status;
             this.Address = new()
             {
                 ZipCode = passenger.Address.ZipCode,
                 Street = passenger.Address.Street,
                 Number = passenger.Address.Number,
                 Complement = passenger.Address.Complement,
-                City = passenger.Address.City,
-                State = passenger.Address.State,
             };
         }
     }

@@ -22,7 +22,7 @@ namespace OnTheFly.Models.Dto
             this.Schedule = flight.Schedule;
             this.Status = flight.Status;
             this.Arrival = flight.Arrival;
-            this.Plane = new AirCraftDTO(flight.Plane);
+            this.Plane = flight.Plane;
 
         }
     }
