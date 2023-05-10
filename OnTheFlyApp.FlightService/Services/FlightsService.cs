@@ -13,6 +13,7 @@ namespace OnTheFlyApp.FlightService.Services
     {
         private readonly IMongoCollection<Flight> _flight;
         private readonly IMongoCollection<Flight> _disabled;
+        private readonly IMongoCollection<Flight> _restricted;
         private readonly IMongoCollection<Flight> _deleted;
         private readonly IMongoCollection<AirCraft> _airCraft;
         private readonly IMongoCollection<Airport> _airport;
@@ -29,6 +30,7 @@ namespace OnTheFlyApp.FlightService.Services
             _flight = database.GetCollection<Flight>(settings.FlightCollection);
             _airport = database.GetCollection<Airport>(settings.AirportCollection);
             _disabled = database.GetCollection<Flight>(settings.DisabledCollection);
+            _restricted = database.GetCollection<Flight>(settings.RestrictedCollection);
             _deleted = database.GetCollection<Flight>(settings.DeletedCollection);
             _airCraft = database.GetCollection<AirCraft>(settings.AirCraftCollection);
             _util = util;
@@ -139,9 +141,8 @@ namespace OnTheFlyApp.FlightService.Services
             return flightDTO;
         }
 
-        public async Task<ActionResult<FlightDTO>> UpdateFlight(string rab, DateTime schedule, bool status)
+        public async Task<ActionResult<FlightGetDTO>> UpdateFlight(string rab, DateTime schedule, bool status)
         {
-
             if (rab == null)
                 return new ContentResult() { Content = "O RAB do avião não pode ser nulo.", StatusCode = StatusCodes.Status400BadRequest };
 
@@ -151,35 +152,22 @@ namespace OnTheFlyApp.FlightService.Services
             if (!_util.VerifyRab(rab))
                 return new ContentResult() { Content = "RAB inválido.", StatusCode = StatusCodes.Status400BadRequest };
 
-            var filter = Builders<Flight>.Filter.Eq(f => f.Plane.Rab, rab) &
-                Builders<Flight>.Filter.Eq("Schedule", schedule);
-
-            var flightUpdated = await _flight.Find(filter).FirstOrDefaultAsync();
-
-            if (flightUpdated == null)
-                return new ContentResult() { Content = "O voo não foi encontrado.", StatusCode = StatusCodes.Status404NotFound };
-
-            flightUpdated.Status = !status;
-
-            if (flightUpdated.Status == true)
+            if (status == true)
             {
-                await _flight.InsertOneAsync(flightUpdated);
-                await _deleted.DeleteOneAsync(filter);
+                var flight = _disabled.Find(f => f.Plane.Rab == rab && f.Schedule == schedule).FirstOrDefaultAsync().Result;
+                flight.Plane.Company.Status = status;
+                FlightGetDTO flightTrue = new(flight);
+                _disabled.DeleteOne(f => f.Plane.Rab == rab && f.Schedule == schedule);
+                _flight.InsertOne(flight);
+                HttpResponseMessage responseAirCraft = await FlightsService.flightClient.GetAsync("https://localhost:5002/api/AirCraftsService/" + flight.Plane.Rab);
+                if (responseAirCraft.StatusCode.ToString().Equals("400"))
+                    return null;
+
+                return flightTrue;
             }
-            else
-            {
-                await _deleted.InsertOneAsync(flightUpdated);
-                await _flight.DeleteOneAsync(filter);
-            }
-
-
-            var result = await _flight.ReplaceOneAsync(filter, flightUpdated);
-
-            if (result.ModifiedCount == 0)
-                return new ContentResult() { Content = "O voo não foi atualizado.", StatusCode = StatusCodes.Status400BadRequest };
-
-            return new FlightDTO(flightUpdated);
+            return new ContentResult() { Content = "Não foi possível atualizar o voo.", StatusCode = StatusCodes.Status400BadRequest };
         }
+
 
         public async Task<ActionResult> DeleteFlight(string rab, DateTime schedule)
         {
