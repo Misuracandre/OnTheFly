@@ -22,7 +22,7 @@ namespace OnTheFly.Models
         public string NameOpt { get; set; }
         public DateTime DtOpen { get; set; }
         public bool? Status { get; set; }
-        public Address Address { get; set; }
+        public Address? Address { get; set; }
 
         public Company() { }
         public Company(CompanyInsertDTO company)
@@ -30,7 +30,7 @@ namespace OnTheFly.Models
             Cnpj = company.Cnpj;
             Name = company.Name;
             NameOpt = company.NameOpt;
-            DtOpen = DateTime.Parse(company.DtOpen);
+            DtOpen = company.DtOpen;
             Status = company.Status;
             Address = new Address() { ZipCode = company.Address.ZipCode, Number =  company.Address.Number };
         }
@@ -39,17 +39,9 @@ namespace OnTheFly.Models
             Cnpj = company.Cnpj;
             Name = company.Name;
             NameOpt = company.NameOpt;
-            DtOpen = DateTime.Parse(company.DtOpen);
+            DtOpen = company.DtOpen;
             Status = company.Status;
-            Address = new Address()
-            {
-                ZipCode = company.Address.ZipCode,
-                Street = company.Address.Street,
-                Number = company.Address.Number,
-                Complement = company.Address.Complement,
-                City = company.Address.City,
-                State = company.Address.State
-            };
+            Address = company.Address;
         }
     }
 }

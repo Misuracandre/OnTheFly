@@ -4,12 +4,10 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
 
 namespace OnTheFly.Models.Dto
 {
-    public class CompanyDTO
+    public class CompanyGetDTO
     {
         [StringLength(18)]
         public string Cnpj { get; set; }
@@ -21,8 +19,8 @@ namespace OnTheFly.Models.Dto
         public bool? Status { get; set; }
         public AddressDTO Address { get; set; }
 
-        public CompanyDTO() { }
-        public CompanyDTO(Company company)
+        public CompanyGetDTO() { }
+        public CompanyGetDTO(Company company) 
         {
             Cnpj = company.Cnpj;
             Name = company.Name;
