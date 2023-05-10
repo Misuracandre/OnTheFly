@@ -7,5 +7,7 @@
         public string CompanyAddressCollection { get; set; }
         public string ConnectionString { get; set; }
         public string DatabaseName { get; set; }
+        public string CompanyRestrictedCollection { get; set; }
+        public string CompanyDeletedCollection { get; set; }
     }
 }

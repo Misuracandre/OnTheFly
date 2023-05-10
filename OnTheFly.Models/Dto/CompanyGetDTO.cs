@@ -15,7 +15,7 @@ namespace OnTheFly.Models.Dto
         public string? Name { get; set; }
         [StringLength(30)]
         public string NameOpt { get; set; }
-        public DateTime DtOpen { get; set; }
+        public string DtOpen { get; set; }
         public bool? Status { get; set; }
         public Address Address { get; set; }
 
@@ -25,9 +25,23 @@ namespace OnTheFly.Models.Dto
             Cnpj = company.Cnpj;
             Name = company.Name;
             NameOpt = company.NameOpt;
-            DtOpen = company.DtOpen;
+            DtOpen = company.DtOpen.ToString("dd/MM/yyyy"); ;
             Status = company.Status;
             Address = company.Address;
+        }
+        public CompanyGetDTO(CompanyInsertDTO company)
+        {
+            Cnpj = company.Cnpj;
+            Name = company.Name;
+            NameOpt = company.NameOpt;
+            DtOpen = company.DtOpen;
+            Status = company.Status;
+            Address = new Address()
+            {
+                ZipCode = company.Address.ZipCode,
+                Number = company.Address.Number,
+                Complement = company.Address.Complement,
+            };
         }
     }
 }

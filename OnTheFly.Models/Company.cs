@@ -30,7 +30,6 @@ namespace OnTheFly.Models
             Cnpj = company.Cnpj;
             Name = company.Name;
             NameOpt = company.NameOpt;
-            DtOpen = company.DtOpen;
             Status = company.Status;
             Address = new Address() { ZipCode = company.Address.ZipCode, Number =  company.Address.Number };
         }
@@ -39,7 +38,6 @@ namespace OnTheFly.Models
             Cnpj = company.Cnpj;
             Name = company.Name;
             NameOpt = company.NameOpt;
-            DtOpen = company.DtOpen;
             Status = company.Status;
             Address = company.Address;
         }

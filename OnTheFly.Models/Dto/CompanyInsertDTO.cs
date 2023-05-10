@@ -17,7 +17,7 @@ namespace OnTheFly.Models.Dto
         public string? Name { get; set; }
         [StringLength(30)]
         public string NameOpt { get; set; }
-        public DateTime DtOpen { get; set; }
+        public string DtOpen { get; set; }
         public bool? Status { get; set; }
         public AddressInsert Address { get; set; }
 
