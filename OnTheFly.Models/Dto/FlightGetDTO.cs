@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OnTheFly.Models.Dto
 {
-    public class FlightInsertDTO
+    public class FlightGetDTO
     {
         public int Sales { get; set; }
         public DateTime Schedule { get; set; }
@@ -14,16 +14,15 @@ namespace OnTheFly.Models.Dto
         public Airport Arrival { get; set; }
         public AirCraftDTO Plane { get; set; }
 
-        public FlightInsertDTO() { }
+        public FlightGetDTO() { }
 
-        public FlightInsertDTO(Flight flight)
+        public FlightGetDTO(Flight flight)
         {
             this.Sales = flight.Sales;
             this.Schedule = flight.Schedule;
             this.Status = flight.Status;
             this.Arrival = flight.Arrival;
             this.Plane = new AirCraftDTO(flight.Plane);
-
         }
     }
 }
