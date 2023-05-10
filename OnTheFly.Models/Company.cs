@@ -25,21 +25,20 @@ namespace OnTheFly.Models
         public Address? Address { get; set; }
 
         public Company() { }
-        public Company(CompanyInsertDTO company)
-        {
-            Cnpj = company.Cnpj;
-            Name = company.Name;
-            NameOpt = company.NameOpt;
-            Status = company.Status;
-            Address = new Address() { ZipCode = company.Address.ZipCode, Number =  company.Address.Number };
-        }
         public Company(CompanyGetDTO company)
         {
             Cnpj = company.Cnpj;
             Name = company.Name;
             NameOpt = company.NameOpt;
             Status = company.Status;
-            Address = company.Address;
+            Address = new Address()
+            {
+                ZipCode = company.Address.ZipCode,
+                Street = company.Address.Street,
+                Number = company.Address.Number,
+                City = company.Address.City,
+                State = company.Address.State,
+            };
         }
     }
 }

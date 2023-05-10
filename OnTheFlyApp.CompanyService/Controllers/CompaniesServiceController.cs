@@ -57,7 +57,14 @@ namespace OnTheFlyApp.CompanyService.Controllers
                 return BadRequest("Cnpj inválido");
 
             if (_companyService.GetByCompany(companydto.Cnpj) != null)
+            {
                 return BadRequest("Cnpj já está registrado");
+            }
+            else if (_companyService.GetByCompanyRestricted(companydto.Cnpj).Result != null)
+            { return BadRequest("Cnpj já está registrado"); }
+
+            if (_companyService.GetByCompanyRestricted(companydto.Cnpj).Result != null)
+            { return BadRequest("Cnpj está cadastrado e restrito"); }
 
             if (companydto.NameOpt == "string" || companydto.NameOpt == string.Empty) { companydto.NameOpt = companydto.Name; }
 
@@ -69,14 +76,15 @@ namespace OnTheFlyApp.CompanyService.Controllers
                 return BadRequest("Data de registro inválida -> dd/mm/yyyy");
 
             company.DtOpen = dateCmp;
+
             //Método consumindo api busca cep
             var newAddress = _util.GetAddress(company.Address.ZipCode).Result;
 
             if (newAddress == null || newAddress.ZipCode == null || company.Address.Number == 0)
                 return BadRequest("Endereço inválido");
 
-            newAddress.Number = company.Address.Number;
-            newAddress.Complement = company.Address.Complement;
+            newAddress.Number = companydto.Address.Number;
+            newAddress.Complement = companydto.Address.Complement;
             company.Address = new(newAddress);
             CompanyGetDTO companyReturn = new();
 
@@ -91,63 +99,66 @@ namespace OnTheFlyApp.CompanyService.Controllers
             return companyReturn;
         }
 
-        [HttpPut("{cnpj}")]
+        [HttpPut("cnpj/", Name = "Status")]
         public async Task<ActionResult<CompanyGetDTO>> Update(string cnpj)
         {
             var companyStatus = _companyService.GetByCompany(cnpj);
 
-            if (companyStatus == null)
-                return NotFound("Companhia não encontrada");
+            if (companyStatus == null) { companyStatus = await _companyService.GetByCompanyRestricted(cnpj); }
+            if (companyStatus.Cnpj == null) return NotFound("Companhia não encontrada");
 
             CompanyGetDTO companyReturn = new();
-            try
-            {
-                if (companyStatus.Status == true) { companyReturn = await _companyService.Update(cnpj, false); }
 
-                else companyReturn = await _companyService.Update(cnpj, true);
-            }
-            catch (Exception)
+            if (companyStatus.Status == true)
             {
-                throw new Exception("");
+                companyReturn = await _companyService.Update(cnpj, false);
             }
+            else
+            {
+                companyReturn = await _companyService.Update(cnpj, true);
+            }
+
+            if (companyReturn == null) { return BadRequest("Companhia não possui avião"); }
 
             return Ok(companyReturn);
         }
 
-        [HttpPut("restricted/{cnpj}")]
+        [HttpPut("restricted/")]
         public async Task<ActionResult> UpdateRestricted(string cnpj)
         {
             CompanyGetDTO company = new();
-            try
+
+            company = _companyService.GetByCompany(cnpj);
+            if (company != null)
             {
-                company = _companyService.GetByCompany(cnpj);
                 _companyService.UpdateRestricted(company, cnpj, true);
                 return Ok("Companhia foi restrita");
             }
-            catch (Exception)
+            else
             {
-                try
+                company = await _companyService.GetByCompanyRestricted(cnpj);
+                if (company != null)
                 {
-                    company = null;
                     _companyService.UpdateRestricted(company, cnpj, false);
-                    return Ok("Companhia sem restrição");
+                    return Ok("COmpanhia sem restrição");
                 }
-                catch (Exception) { return NotFound("Companhia não foi encontrada"); }
+                return NotFound("Companhia não foi encontrada");
             }
         }
 
-       /* [HttpDelete]
+        [HttpDelete]
         public HttpStatusCode Delete(string cnpj)
         {
             var companyResult = _companyService.GetByCompany(cnpj);
             if (companyResult == null)
-                return BadRequest("Não encontrada");
-            if (companyResult.Status == true)
-                return BadRequest("A companhia precisa estar desativada");
+            {
+                companyResult = _companyService.GetByCompanyRestricted(cnpj).Result;
+                if (companyResult == null) return HttpStatusCode.NotFound;
+            }
 
             _companyService.Delete(cnpj);
 
             return HttpStatusCode.OK;
-        }*/
+        }
     }
 }
