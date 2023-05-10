@@ -23,31 +23,44 @@ namespace OnTheFlyApp.CompanyService.Controllers
             _util = util;
         }
 
-        [HttpGet(Name = "GetAll")]
-        public ActionResult<List<CompanyGetDTO>> GetAll() => _companyService.GetAll();
+        [HttpGet("acitevated/", Name = "GetAll")]
+        public ActionResult<List<CompanyGetDTO>> GetAll()
+        {
+            List<CompanyGetDTO> lstReturn = _companyService.GetAll();
+            if (lstReturn.Count == 0) { return NotFound("Companhias ativas não encontradas"); }
+
+            return lstReturn;
+        }
 
         [HttpGet("disable/", Name = "GetDisable")]
-        public ActionResult<List<CompanyGetDTO>> GetDisable() => _companyService.GetDisable();
+        public ActionResult<List<CompanyGetDTO>> GetDisable()
+        {
+            List<CompanyGetDTO> lstReturn = _companyService.GetDisable();
+            if (lstReturn.Count == 0) { return NotFound("Companhias desativadas não encontradas"); }
 
-        [HttpGet("cnpj/", Name = "GetCnpj")]
+            return lstReturn;
+        }
+
+        [HttpGet("company/{cnpj}", Name = "GetCnpj")]
         public ActionResult<CompanyGetDTO> GetCnpj(string cnpj)
         {
-            try
-            {
-                cnpj = _util.JustDigits(cnpj);
-                var companyreturn = _companyService.GetByCompany(cnpj);
-                return companyreturn == null ? NotFound("Companhia não encontrada") : companyreturn;
+            cnpj = _util.JustDigits(cnpj);
+            var companyreturn = _companyService.GetByCompany(cnpj);
+            if(companyreturn == null) { companyreturn = _companyService.GetByCompanyRestricted(cnpj).Result;
+                if (companyreturn != null) { return Ok("RESTRICTED"); }
             }
-            catch (Exception)
-            {
-                var companyReturn = _companyService.GetByCompanyRestricted(cnpj).Result;
-                if (companyReturn.Cnpj != null) { return Ok("RESTRICTED"); }
-                return NotFound();
-            }
+
+            return companyreturn == null ? NotFound("Companhia não encontrada") : companyreturn;
         }
 
         [HttpGet("restricted/", Name = "GetRestricted")]
-        public ActionResult<List<CompanyGetDTO>> GetRestricted() => _companyService.GetRestricted();
+        public ActionResult<List<CompanyGetDTO>> GetRestricted()
+        {
+            List<CompanyGetDTO> lstReturn = _companyService.GetRestricted();
+            if (lstReturn.Count == 0) { return NotFound("Companhias restritas não encontradas"); }
+
+            return lstReturn;
+        }
 
         [HttpPost]
         public ActionResult<CompanyGetDTO> Create(CompanyGetDTO companydto)
@@ -100,7 +113,7 @@ namespace OnTheFlyApp.CompanyService.Controllers
             return companyReturn;
         }
 
-        [HttpPut("cnpj/", Name = "Status")]
+        [HttpPut("cnpj/{cnpj}", Name = "Status")]
         public async Task<ActionResult<CompanyGetDTO>> Update(string cnpj)
         {
             var companyStatus = _companyService.GetByCompany(cnpj);
@@ -112,11 +125,11 @@ namespace OnTheFlyApp.CompanyService.Controllers
 
             if (companyStatus.Status == true)
             {
-                companyReturn = await _companyService.Update(cnpj, false);
+                companyReturn = _companyService.Update(cnpj, false).Result;
             }
             else
             {
-                companyReturn = await _companyService.Update(cnpj, true);
+                companyReturn = _companyService.Update(cnpj, true).Result;
             }
 
             if (companyReturn == null) { return BadRequest("Companhia não possui avião"); }
@@ -124,7 +137,7 @@ namespace OnTheFlyApp.CompanyService.Controllers
             return Ok(companyReturn);
         }
 
-        [HttpPut("restricted/")]
+        [HttpPut("restricted/{cnpj}")]
         public async Task<ActionResult> UpdateRestricted(string cnpj)
         {
             CompanyGetDTO company = new();
