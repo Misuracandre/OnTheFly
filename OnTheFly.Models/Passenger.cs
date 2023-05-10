@@ -60,7 +60,7 @@ namespace OnTheFly.Models
             this.Phone = passenger.Phone;
             this.DtRegister = DateTime.Now;
             this.Status = passenger.Status;
-            this.Address = new() { ZipCode = passenger.Address.ZipCode, Number = passenger.Address.Number };
+            this.Address = new() { ZipCode = passenger.Address.ZipCode, Number = passenger.Address.Number, Complement = passenger.Address.Complement };
         }
     }
 }

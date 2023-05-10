@@ -110,15 +110,20 @@ namespace OnTheFlyApp.PassengerService.Service
             Address addressAlreadyExists = _address.Find(a => a.ZipCode == address.ZipCode && a.Number == address.Number).FirstOrDefault();
 
             if (addressAlreadyExists != null)
+            {
+                addressAlreadyExists.Street = addressAlreadyExists.Street == "" ? address.Street : addressAlreadyExists.Street;
+                addressAlreadyExists.Complement = address.Complement;
                 return new AddressDTO(addressAlreadyExists);
+            }
 
             addressAlreadyExists = _util.GetAddress(address.ZipCode).Result;
             if (addressAlreadyExists == null)
                 return new ContentResult() { Content = "Localidade não encontrada", StatusCode = StatusCodes.Status400BadRequest };
-            
+
+            addressAlreadyExists.Street = addressAlreadyExists.Complement == "" ? address.Street : addressAlreadyExists.Complement;
+            addressAlreadyExists.Complement = address.Complement;
             addressAlreadyExists.ZipCode = address.ZipCode;
             addressAlreadyExists.Number = address.Number;
-            addressAlreadyExists.Complement = address.Complement;
 
             _address.InsertOne(addressAlreadyExists);
 
@@ -127,20 +132,52 @@ namespace OnTheFlyApp.PassengerService.Service
             return new AddressDTO(addressAlreadyExists);
         }
 
-        public ActionResult<PassengerDTO> Update(string cpf, PassengerDTO passenger)
+        public ActionResult<PassengerDTO> Update(string cpf, PassengerUpdateDTO passenger)
         {
             cpf = _util.JustDigits(cpf);
             if (!_util.VerifyCpf(cpf))
                 return new ContentResult() { Content = "CPF inválido", StatusCode = StatusCodes.Status400BadRequest };
 
+            if (passenger.Name == null || passenger.Name == "")
+                return new ContentResult() { Content = "Nome obrigatório", StatusCode = StatusCodes.Status400BadRequest };
+
+            if (passenger.Gender == null || passenger.Gender == "")
+                return new ContentResult() { Content = "Gênero obrigatório", StatusCode = StatusCodes.Status400BadRequest };
+
+            passenger.Gender = passenger.Gender.ToUpper();
+            if (passenger.Gender.ToUpper() != "M" && passenger.Gender.ToUpper() != "F" && passenger.Gender.ToUpper() != "O")
+                return new ContentResult() { Content = "Gênero inválido, coloque 'F' para Feminino,'M' Masculino, ou 'O' para outro", StatusCode = StatusCodes.Status400BadRequest };
+
+            passenger.Phone = _util.JustDigits(passenger.Phone);
+            if (passenger.Phone.Length < 8)
+                return new ContentResult() { Content = "Telefone requer no mínimo 8 digitos (Ex.: (16)99788-6655)", StatusCode = StatusCodes.Status400BadRequest };
+
+            if (!DateTime.TryParse(passenger.DtBirth, out DateTime dBirth))
+                return new ContentResult() { Content = "Data de nascimento em formato inválido, digite uma data no formato dia, mês e ano (Ex.: 31/12/1999)", StatusCode = StatusCodes.Status400BadRequest };
+
+            if (dBirth > DateTime.Now)
+                return new ContentResult() { Content = "Data de nascimento deve ser menor que a data atual", StatusCode = StatusCodes.Status400BadRequest };
+
+            passenger.DtBirth = dBirth.AddHours(-3).ToString();
+
+            if (passenger.Address.ZipCode == null || passenger.Address.ZipCode == "")
+                return new ContentResult() { Content = "Campo ZipCode precisa conter um CEP válido", StatusCode = StatusCodes.Status400BadRequest };
+
+            passenger.Address.ZipCode = _util.JustDigits(passenger.Address.ZipCode);
+            AddressDTO address = new(passenger.Address);
+                address = CreateAddres(address).Value;
+
+            if (address == null)
+                return new ContentResult() { Content = "Localidade não encontrada", StatusCode = StatusCodes.Status400BadRequest };
+
+
+
             var options = new FindOneAndUpdateOptions<Passenger, Passenger> { ReturnDocument = ReturnDocument.After };
             var update = Builders<Passenger>.Update.Set("Name", passenger.Name).
                                                     Set("Gender", passenger.Gender).
-                                                    Set("Gender", passenger.Gender).
                                                     Set("Phone", passenger.Phone).
                                                     Set("DtBirth", passenger.DtBirth).
-                                                    Set("Status", passenger.Status).
-                                                    Set("Address", passenger.Address);
+                                                    Set("Address", address);
             var passengerUpdated = _passenger.FindOneAndUpdate<Passenger>(p => p.Cpf == cpf, update, options);
             if (passengerUpdated == null)
                 return new ContentResult() { Content = "Passageiro não encontrado", StatusCode = StatusCodes.Status404NotFound };
