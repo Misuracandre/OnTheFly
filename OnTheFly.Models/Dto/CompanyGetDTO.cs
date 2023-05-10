@@ -35,7 +35,7 @@ namespace OnTheFly.Models.Dto
                 Number = company.Address.Number,
                 Complement = company.Address.Complement,
                 City = company.Address.City,
-                State = company.Address.State,
+                State = company.Address.State
             };
         }
         public CompanyGetDTO(CompanyInsertDTO company)
@@ -49,7 +49,6 @@ namespace OnTheFly.Models.Dto
             {
                 ZipCode = company.Address.ZipCode,
                 Number = company.Address.Number,
-                Complement = company.Address.Complement,
             };
         }
     }

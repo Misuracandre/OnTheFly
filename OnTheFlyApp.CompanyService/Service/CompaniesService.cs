@@ -78,7 +78,8 @@ namespace OnTheFlyApp.CompanyService.Service
         public async Task<CompanyGetDTO> GetByCompanyRestricted(string cnpj)
         {
             Company company = await _companyRestricted.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync();
-            if (company == null) return null;
+            if (company == null) { return null; }
+
             CompanyGetDTO companyReturn = new(company);
 
             return companyReturn;
@@ -97,21 +98,34 @@ namespace OnTheFlyApp.CompanyService.Service
 
         public async Task<CompanyGetDTO> Update(string cnpj, bool status)
         {
+            var company = _companyRestricted.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync().Result;
+            if(company != null)
+            {
+                HttpResponseMessage responseAirCraft = await CompaniesService.companyClient.GetAsync(endpointAirCraft + cnpj);
+                if (!responseAirCraft.StatusCode.ToString().Equals("204") || !responseAirCraft.StatusCode.ToString().Equals("200"))
+                    return null;
+
+                CompanyGetDTO companyRestricted = new();
+                if (status == true) { company.Status = true; _companyRestricted.ReplaceOne(c => c.Cnpj == cnpj, company); 
+                    return companyRestricted = new(company); }
+                else company.Status = false; _companyRestricted.ReplaceOne(c => c.Cnpj == cnpj, company); 
+                    return companyRestricted = new(company);
+            }
+
             if (status == true)
             {
-                var company = _companyDisabled.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync().Result;
+                company = _companyDisabled.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync().Result;
                 company.Status = status;
                 CompanyGetDTO companyTrue = new(company);
                 _companyDisabled.DeleteOne(c => c.Cnpj == cnpj);
                 _company.InsertOne(company);
                 HttpResponseMessage responseAirCraft = await CompaniesService.companyClient.GetAsync(endpointAirCraft + cnpj);
-                if (responseAirCraft.StatusCode.ToString().Equals("400"))
+                if (!responseAirCraft.StatusCode.ToString().Equals("204") || !responseAirCraft.StatusCode.ToString().Equals("200"))
                     return null;
 
                 return companyTrue;
             }
-            try
-            {
+            else {
                 var insertDisabled = _company.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync().Result;
                 _company.DeleteOne(c => c.Cnpj == cnpj);
                 insertDisabled.Status = status;
@@ -119,11 +133,7 @@ namespace OnTheFlyApp.CompanyService.Service
 
                 CompanyGetDTO companyFalse = new(insertDisabled);
 
-                return companyFalse;
-            }
-            catch (Exception)
-            {
-                throw;
+                return companyFalse; 
             }
         }
 
@@ -146,10 +156,15 @@ namespace OnTheFlyApp.CompanyService.Service
 
         public void Delete(string cnpj)
         {
-            var insertDisable = _companyDisabled.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync().Result;
-            _address.DeleteOne(c => c.Number == insertDisable.Address.Number && c.ZipCode == insertDisable.Address.ZipCode);
-            insertDisable.Status = false;
-            _companyDisabled.DeleteOne(c => c.Cnpj == cnpj);
+            var deletedDisabled = _companyDisabled.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync().Result;
+            var deletedCompany = _company.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync().Result;
+            if (deletedDisabled == null && deletedCompany == null)
+            {
+                var deleteRestricted = _companyRestricted.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync().Result;
+                if (deleteRestricted != null) { _companyRestricted.DeleteOne(cnpj); _companyDeleted.InsertOne(deletedDisabled); return; }
+            }
+            if(deletedDisabled != null) { _companyDisabled.DeleteOne(cnpj); _companyDeleted.InsertOne(deletedDisabled); return; }
+            else _company.DeleteOne(cnpj); _companyDeleted.InsertOne(deletedCompany); return;
         }
     }
 }
