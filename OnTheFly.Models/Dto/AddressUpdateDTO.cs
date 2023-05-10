@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace OnTheFly.Models.Dto
 {
-    public class AddressDTO
+    public class AddressUpdateDTO
     {
         [JsonProperty("cep")]
         public string ZipCode { get; set; }
@@ -19,25 +19,9 @@ namespace OnTheFly.Models.Dto
         [JsonProperty("complemento")]
         public string? Complement { get; set; }
 
-        [JsonProperty("localidade")]
-        public string City { get; set; }
+        public AddressUpdateDTO() { }
 
-        [JsonProperty("uf")]
-        public string State { get; set; }
-
-        public AddressDTO() { }
-
-        public AddressDTO(Address address)
-        {
-            this.ZipCode = address.ZipCode;
-            this.Street = address.Street;
-            this.Number = address.Number;
-            this.Complement = address.Complement;
-            this.City = address.City;
-            this.State = address.State;
-        }
-
-        public AddressDTO(AddressUpdateDTO address)
+        public AddressUpdateDTO(Address address)
         {
             this.ZipCode = address.ZipCode;
             this.Street = address.Street;
