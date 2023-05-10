@@ -91,7 +91,7 @@ namespace OnTheFlyApp.CompanyService.Service
                 throw new Exception();
             company.Status = false;
             _address.InsertOne(new Address(company.Address));
-            _company.InsertOne(company);
+            _companyDisabled.InsertOne(company);
 
             return company;
         }
@@ -102,7 +102,7 @@ namespace OnTheFlyApp.CompanyService.Service
             if(company != null)
             {
                 HttpResponseMessage responseAirCraft = await CompaniesService.companyClient.GetAsync(endpointAirCraft + cnpj);
-                if (!responseAirCraft.StatusCode.ToString().Equals("204") || !responseAirCraft.StatusCode.ToString().Equals("200"))
+                if (!responseAirCraft.StatusCode.ToString().Equals("OK"))
                     return null;
 
                 CompanyGetDTO companyRestricted = new();
@@ -114,14 +114,15 @@ namespace OnTheFlyApp.CompanyService.Service
 
             if (status == true)
             {
+                HttpResponseMessage responseAirCraft = await CompaniesService.companyClient.GetAsync(endpointAirCraft + cnpj);
+                if (!responseAirCraft.StatusCode.ToString().Equals("204"))
+                    return null;
+
                 company = _companyDisabled.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync().Result;
                 company.Status = status;
                 CompanyGetDTO companyTrue = new(company);
                 _companyDisabled.DeleteOne(c => c.Cnpj == cnpj);
                 _company.InsertOne(company);
-                HttpResponseMessage responseAirCraft = await CompaniesService.companyClient.GetAsync(endpointAirCraft + cnpj);
-                if (!responseAirCraft.StatusCode.ToString().Equals("204") || !responseAirCraft.StatusCode.ToString().Equals("200"))
-                    return null;
 
                 return companyTrue;
             }
