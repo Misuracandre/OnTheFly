@@ -37,5 +37,19 @@ namespace OnTheFly.Models.Dto
                 State = company.Address.State,
             };
         }
+        public CompanyGetDTO(CompanyInsertDTO company)
+        {
+            Cnpj = company.Cnpj;
+            Name = company.Name;
+            NameOpt = company.NameOpt;
+            DtOpen = company.DtOpen;
+            Status = company.Status;
+            Address = new Address()
+            {
+                ZipCode = company.Address.ZipCode,
+                Number = company.Address.Number,
+                Complement = company.Address.Complement,
+            };
+        }
     }
 }
