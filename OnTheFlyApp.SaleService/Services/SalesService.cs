@@ -187,8 +187,8 @@ namespace OnTheFlyApp.SaleService.Services
                 return new ContentResult() { Content = "Venda inserida na fila", StatusCode = StatusCodes.Status200OK };
             }
 
-            _sale.InsertOne(s);
-            return s;
+            //_sale.InsertOne(s);
+            //return new ContentResult() { Content = "Venda inserida na fila", StatusCode = StatusCodes.Status200OK }
         }
     }
 }

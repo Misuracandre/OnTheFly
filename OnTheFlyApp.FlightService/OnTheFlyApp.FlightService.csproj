@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OnTheFly.Models\OnTheFly.Models.csproj" />
+    <ProjectReference Include="..\Utility\Utility.csproj" />
   </ItemGroup>
 
 </Project>
