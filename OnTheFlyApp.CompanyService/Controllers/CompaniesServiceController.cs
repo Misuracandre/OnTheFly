@@ -23,7 +23,7 @@ namespace OnTheFlyApp.CompanyService.Controllers
             _util = util;
         }
 
-        [HttpGet("getall/activated/", Name = "GetAllActivated")]
+        [HttpGet("getActivated/", Name = "GetAllActivated")]
         public ActionResult<List<CompanyGetDTO>> GetAll()
         {
             List<CompanyGetDTO> lstReturn = _companyService.GetAll();
@@ -32,7 +32,7 @@ namespace OnTheFlyApp.CompanyService.Controllers
             return lstReturn;
         }
 
-        [HttpGet("getall/disabled/", Name = "GetDisable")]
+        [HttpGet("getDisabled/", Name = "GetDisable")]
         public ActionResult<List<CompanyGetDTO>> GetDisable()
         {
             List<CompanyGetDTO> lstReturn = _companyService.GetDisable();
@@ -41,19 +41,26 @@ namespace OnTheFlyApp.CompanyService.Controllers
             return lstReturn;
         }
 
-        [HttpGet("get/company/{cnpj}", Name = "GetCnpj")]
+        [HttpGet("getCompanyCnpj/", Name = "GetCnpj")]
         public ActionResult<CompanyGetDTO> GetCnpj(string cnpj)
         {
             cnpj = _util.JustDigits(cnpj);
+            cnpj = cnpj.Replace("%2","");
+
+            if (_util.VerifyCnpj(cnpj) == false)
+                return BadRequest("Cnpj inválido");
+
             var companyreturn = _companyService.GetByCompany(cnpj);
-            if(companyreturn == null) { companyreturn = _companyService.GetByCompanyRestricted(cnpj).Result;
+            if (companyreturn == null)
+            {
+                companyreturn = _companyService.GetByCompanyRestricted(cnpj).Result;
                 if (companyreturn != null) { return Ok("RESTRICTED"); }
             }
 
             return companyreturn == null ? NotFound("Companhia não encontrada") : companyreturn;
         }
 
-        [HttpGet("getall/restricted/", Name = "GetRestricted")]
+        [HttpGet("getRestricted/", Name = "GetRestricted")]
         public ActionResult<List<CompanyGetDTO>> GetRestricted()
         {
             List<CompanyGetDTO> lstReturn = _companyService.GetRestricted();
@@ -62,10 +69,11 @@ namespace OnTheFlyApp.CompanyService.Controllers
             return lstReturn;
         }
 
-        [HttpPost]
+        [HttpPost("postCompany/")]
         public ActionResult<CompanyGetDTO> Create(CompanyGetDTO companydto)
         {
             companydto.Cnpj = _util.JustDigits(companydto.Cnpj);
+            companydto.Cnpj = companydto.Cnpj.Replace("%2", "");
 
             if (_util.VerifyCnpj(companydto.Cnpj) == false)
                 return BadRequest("Cnpj inválido");
@@ -102,24 +110,24 @@ namespace OnTheFlyApp.CompanyService.Controllers
             company.Address = new(newAddress);
             CompanyGetDTO companyReturn = new();
 
-            try
-            {
-                companyReturn = new(_companyService.Create(company));
-            }
-            catch (Exception)
-            {
-                return BadRequest("Endereço já cadastrado");
-            }
+            companyReturn = new(_companyService.Create(company));
+
             return companyReturn;
         }
 
-        [HttpPut("patch/{cnpj}", Name = "Status")]
+        [HttpPut("patchStatus/", Name = "Status")]
         public async Task<ActionResult<CompanyGetDTO>> Update(string cnpj)
         {
+            cnpj = _util.JustDigits(cnpj);
+            cnpj = cnpj.Replace("%2", "");
+
+            if (_util.VerifyCnpj(cnpj) == false)
+                return BadRequest("Cnpj inválido");
+
             var companyStatus = _companyService.GetByCompany(cnpj);
 
             if (companyStatus == null) { companyStatus = await _companyService.GetByCompanyRestricted(cnpj); }
-            if (companyStatus.Cnpj == null) return NotFound("Companhia não encontrada");
+            if (companyStatus == null) return NotFound("Companhia não encontrada");
 
             CompanyGetDTO companyReturn = new();
 
@@ -137,9 +145,15 @@ namespace OnTheFlyApp.CompanyService.Controllers
             return Ok(companyReturn);
         }
 
-        [HttpPut("patch/restricted/{cnpj}")]
+        [HttpPut("patchRestrictedCnpj/")]
         public async Task<ActionResult> UpdateRestricted(string cnpj)
         {
+            cnpj = _util.JustDigits(cnpj);
+            cnpj = cnpj.Replace("%2", "");
+
+            if (_util.VerifyCnpj(cnpj) == false)
+                return BadRequest("Cnpj inválido");
+
             CompanyGetDTO company = new();
 
             company = _companyService.GetByCompany(cnpj);
@@ -161,18 +175,24 @@ namespace OnTheFlyApp.CompanyService.Controllers
         }
 
         [HttpDelete]
-        public HttpStatusCode Delete(string cnpj)
+        public ActionResult Delete(string cnpj)
         {
+            cnpj = _util.JustDigits(cnpj);
+            cnpj = cnpj.Replace("%2", "");
+
+            if (_util.VerifyCnpj(cnpj) == false)
+                return BadRequest("Cnpj inválido");
+
             var companyResult = _companyService.GetByCompany(cnpj);
             if (companyResult == null)
             {
                 companyResult = _companyService.GetByCompanyRestricted(cnpj).Result;
-                if (companyResult == null) return HttpStatusCode.NotFound;
+                if (companyResult == null) return NotFound("Não localizado");
             }
 
             _companyService.Delete(cnpj);
 
-            return HttpStatusCode.OK;
+            return Ok("Deletado");
         }
     }
 }

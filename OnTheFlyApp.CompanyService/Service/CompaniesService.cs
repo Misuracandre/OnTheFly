@@ -16,7 +16,7 @@ namespace OnTheFlyApp.CompanyService.Service
         private readonly IMongoCollection<Company> _companyDisabled;
         private readonly IMongoCollection<Address> _address;
         static readonly HttpClient companyClient = new HttpClient();
-        static readonly string endpointAirCraft = "https://localhost:5002/api/AirCraftsService/company/";
+        static readonly string endpointAirCraft = "https://localhost:5002/api/AirCraftsService/cnpjCompany?cnpj=";
         public CompaniesService() { }
         public CompaniesService(ICompanyServiceSettings settings)
         {
@@ -57,7 +57,7 @@ namespace OnTheFlyApp.CompanyService.Service
             List<Company> lstRestricted = _companyRestricted.Find(c => true).ToList();
             List<CompanyGetDTO> lstReturn = new();
 
-            foreach(var company in lstRestricted) { lstReturn.Add(companyDTO = new(company)); }
+            foreach (var company in lstRestricted) { lstReturn.Add(companyDTO = new(company)); }
 
             return lstReturn;
         }
@@ -70,7 +70,7 @@ namespace OnTheFlyApp.CompanyService.Service
             var companyDisabled = _companyDisabled.Find<Company>(c => c.Cnpj == cnpj).FirstOrDefault();
             if (companyDisabled == null && company == null) return null;
 
-            if(companyDisabled != null) { return companyReturn = new(companyDisabled); }
+            if (companyDisabled != null) { return companyReturn = new(companyDisabled); }
             else return companyReturn = new(company);
 
         }
@@ -88,7 +88,13 @@ namespace OnTheFlyApp.CompanyService.Service
         public Company Create(Company company)
         {
             if (_address.Find(a => a.Number == company.Address.Number && a.ZipCode == company.Address.ZipCode).FirstOrDefault() != null)
-                throw new Exception();
+            {
+                company.Status = false;
+                _companyDisabled.InsertOne(company);
+
+                return company;
+            }
+
             company.Status = false;
             _address.InsertOne(new Address(company.Address));
             _companyDisabled.InsertOne(company);
@@ -99,23 +105,26 @@ namespace OnTheFlyApp.CompanyService.Service
         public async Task<CompanyGetDTO> Update(string cnpj, bool status)
         {
             var company = _companyRestricted.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync().Result;
-            if(company != null)
+            if (company != null)
             {
                 HttpResponseMessage responseAirCraft = await CompaniesService.companyClient.GetAsync(endpointAirCraft + cnpj);
                 if (!responseAirCraft.StatusCode.ToString().Equals("OK"))
                     return null;
 
                 CompanyGetDTO companyRestricted = new();
-                if (status == true) { company.Status = true; _companyRestricted.ReplaceOne(c => c.Cnpj == cnpj, company); 
-                    return companyRestricted = new(company); }
-                else company.Status = false; _companyRestricted.ReplaceOne(c => c.Cnpj == cnpj, company); 
+                if (status == true)
+                {
+                    company.Status = true; _companyRestricted.ReplaceOne(c => c.Cnpj == cnpj, company);
                     return companyRestricted = new(company);
+                }
+                else company.Status = false; _companyRestricted.ReplaceOne(c => c.Cnpj == cnpj, company);
+                return companyRestricted = new(company);
             }
 
             if (status == true)
             {
                 HttpResponseMessage responseAirCraft = await CompaniesService.companyClient.GetAsync(endpointAirCraft + cnpj);
-                if (!responseAirCraft.StatusCode.ToString().Equals("204"))
+                if (!responseAirCraft.StatusCode.ToString().Equals("OK"))
                     return null;
 
                 company = _companyDisabled.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync().Result;
@@ -126,7 +135,8 @@ namespace OnTheFlyApp.CompanyService.Service
 
                 return companyTrue;
             }
-            else {
+            else
+            {
                 var insertDisabled = _company.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync().Result;
                 _company.DeleteOne(c => c.Cnpj == cnpj);
                 insertDisabled.Status = status;
@@ -134,18 +144,24 @@ namespace OnTheFlyApp.CompanyService.Service
 
                 CompanyGetDTO companyFalse = new(insertDisabled);
 
-                return companyFalse; 
+                return companyFalse;
             }
         }
 
         public async void UpdateRestricted(CompanyGetDTO company, string cnpj, bool status)
         {
             Company companyInsert = new(company);
-            if (company.Status == true && status == true){ _company.DeleteOne(c => c.Cnpj == cnpj); 
-                _companyRestricted.InsertOne(companyInsert); return;}
-            
-            if(company.Status == false && status == true){ _companyDisabled.DeleteOne(c => c.Cnpj == cnpj); 
-                _companyRestricted.InsertOne(companyInsert); return;}
+            if (company.Status == true && status == true)
+            {
+                _company.DeleteOne(c => c.Cnpj == cnpj);
+                _companyRestricted.InsertOne(companyInsert); return;
+            }
+
+            if (company.Status == false && status == true)
+            {
+                _companyDisabled.DeleteOne(c => c.Cnpj == cnpj);
+                _companyRestricted.InsertOne(companyInsert); return;
+            }
 
             CompanyGetDTO companyResult = new(await _companyRestricted.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync());
             if (companyResult == null) { throw new Exception(); }
@@ -155,17 +171,17 @@ namespace OnTheFlyApp.CompanyService.Service
             else _companyRestricted.DeleteOne(c => c.Cnpj == cnpj); _companyDisabled.InsertOne(companyInsert); return;
         }
 
-        public void Delete(string cnpj)
+        public async void Delete(string cnpj)
         {
-            var deletedDisabled = _companyDisabled.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync().Result;
             var deletedCompany = _company.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync().Result;
+            var deletedDisabled = _companyDisabled.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync().Result;
             if (deletedDisabled == null && deletedCompany == null)
             {
                 var deleteRestricted = _companyRestricted.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync().Result;
-                if (deleteRestricted != null) { _companyRestricted.DeleteOne(cnpj); _companyDeleted.InsertOne(deletedDisabled); return; }
+                if (deleteRestricted != null) { _companyRestricted.DeleteOne(c => c.Cnpj == cnpj); _companyDeleted.InsertOne(deleteRestricted); return; }
             }
-            if(deletedDisabled != null) { _companyDisabled.DeleteOne(cnpj); _companyDeleted.InsertOne(deletedDisabled); return; }
-            else _company.DeleteOne(cnpj); _companyDeleted.InsertOne(deletedCompany); return;
+            if (deletedDisabled != null) { _companyDisabled.DeleteOne(c => c.Cnpj == cnpj); _companyDeleted.InsertOne(deletedDisabled); }
+            else { _company.DeleteOne(c => c.Cnpj == cnpj); _companyDeleted.InsertOne(deletedCompany); }
         }
     }
 }

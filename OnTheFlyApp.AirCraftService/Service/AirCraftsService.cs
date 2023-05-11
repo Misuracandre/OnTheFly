@@ -32,24 +32,21 @@ namespace OnTheFlyApp.AirCraftService.Service
         public async Task<ActionResult<AirCraftDTO>> Create(AirCraftInsertDTO aircraft)
         {
             AirCraftDTO aircraftReturn = new(aircraft);
-            var companyObj = new CompanyGetDTO();
+            var companyObj = new AirCraftCompany();
             companyObj.Address = new();
             try
             {                
-                HttpResponseMessage response = await AirCraftsService.aircraftClient.GetAsync("https://localhost:5001/api/CompanyService/cnpj?cnpj=" + aircraft.Company);
+                HttpResponseMessage response = await AirCraftsService.aircraftClient.GetAsync("https://localhost:5001/api/CompanyService/getCompanyCnpj?cnpj=" + aircraft.Company);
                 response.EnsureSuccessStatusCode();
                 var companyReturn = await response.Content.ReadAsStringAsync();
-                companyObj = JsonConvert.DeserializeObject<CompanyGetDTO>(companyReturn);
+                companyObj = JsonConvert.DeserializeObject<AirCraftCompany>(companyReturn);
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return null;
             }
-
             aircraftReturn.Company = companyObj;
-            aircraftReturn.Company.Address = new();
-            aircraftReturn.Company.Address = companyObj.Address;
             AirCraft aircraftdto = new(aircraftReturn);
 
             _aircraft.InsertOne(aircraftdto);
