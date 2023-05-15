@@ -4,6 +4,7 @@ using System.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
+using MongoDB.Driver;
 using OnTheFly.Models;
 using OnTheFly.Models.Dto;
 using OnTheFlyApp.CompanyService.Service;
@@ -45,7 +46,7 @@ namespace OnTheFlyApp.CompanyService.Controllers
         public ActionResult<CompanyGetDTO> GetCnpj(string cnpj)
         {
             cnpj = _util.JustDigits(cnpj);
-            cnpj = cnpj.Replace("%2","");
+            cnpj = cnpj.Replace("%2", "");
 
             if (_util.VerifyCnpj(cnpj) == false)
                 return BadRequest("Cnpj inválido");
@@ -86,7 +87,7 @@ namespace OnTheFlyApp.CompanyService.Controllers
             { return BadRequest("Cnpj já está registrado"); }
 
             if (_companyService.GetByCompanyRestricted(companydto.Cnpj).Result != null)
-            { return BadRequest("Cnpj está cadastrado e restrito"); }
+            { return BadRequest("Cnpj está cadastrado e RESTRITO"); }
 
             if (companydto.NameOpt == "string" || companydto.NameOpt == string.Empty) { companydto.NameOpt = companydto.Name; }
 
@@ -129,20 +130,28 @@ namespace OnTheFlyApp.CompanyService.Controllers
             if (companyStatus == null) { companyStatus = await _companyService.GetByCompanyRestricted(cnpj); }
             if (companyStatus == null) return NotFound("Companhia não encontrada");
 
-            CompanyGetDTO companyReturn = new();
-
-            if (companyStatus.Status == true)
+            try
             {
-                companyReturn = _companyService.Update(cnpj, false).Result;
+                if (companyStatus.Status == true)
+                {
+                    CompanyGetDTO companyReturn = await _companyService.Update(cnpj, false);
+                    if (companyReturn == null) { return BadRequest("Companhia sem avião"); }
+
+                    return Ok(companyReturn);
+                }
+                else
+                {
+                    CompanyGetDTO companyReturn = await _companyService.Update(cnpj, true);
+                    if (companyReturn == null) { return BadRequest("Companhia sem avião");  }
+
+                    return Ok(companyReturn);
+                }
             }
-            else
+            catch (Exception)
             {
-                companyReturn = _companyService.Update(cnpj, true).Result;
+                return Problem(HttpStatusCode.InternalServerError.ToString());
             }
 
-            if (companyReturn == null) { return BadRequest("Companhia não possui avião"); }
-
-            return Ok(companyReturn);
         }
 
         [HttpPut("patchRestrictedCnpj/")]
