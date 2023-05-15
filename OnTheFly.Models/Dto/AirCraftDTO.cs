@@ -14,7 +14,7 @@ namespace OnTheFly.Models.Dto
         public int Capacity { get; set; }
         public DateTime DtRegistry { get; set; }
         public DateTime? DtLastFlight { get; set; }
-        public CompanyGetDTO Company { get; set; }
+        public AirCraftCompany Company { get; set; }
 
         public AirCraftDTO () { }
 
@@ -35,7 +35,7 @@ namespace OnTheFly.Models.Dto
             this.Capacity = airCraftInsertDTO.Capacity;
             this.DtRegistry = airCraftInsertDTO.DtRegistry;
             this.DtLastFlight = airCraftInsertDTO.DtLastFlight;
-            this.Company = new CompanyGetDTO()
+            this.Company = new AirCraftCompany()
             {
                 Cnpj = airCraftInsertDTO.Company
             };
